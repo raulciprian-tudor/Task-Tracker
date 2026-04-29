@@ -1,0 +1,25 @@
+{
+  "name": "task-tracker",
+  "version": "1.0.0",
+  "description": "A full-stack task management web app to track what you need to do, what you're working on, and what you've completed.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "install:all": "npm install && npm install --prefix client && npm install --prefix server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raulciprian-tudor/Task-Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/raulciprian-tudor/Task-Tracker/issues"
+  },
+  "homepage": "https://github.com/raulciprian-tudor/Task-Tracker#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
