@@ -46,7 +46,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
 
     const handleStatusUpdate = async (newStatus) => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/status`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/status`, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({status: newStatus})
@@ -112,6 +112,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
                                 exit={{opacity: 0, scale: 0.95, y: -4}}
                                 transition={{duration: 0.15, ease: "easeOut"}}
                                 className="absolute right-0 top-8 z-20 bg-white border border-stone-100 rounded-xl shadow-lg shadow-stone-100 py-1 w-40 overflow-hidden"
+                                onClick={(e) => e.stopPropagation()}
                             >
                                 {[
                                     {label: "Mark to do", status: "todo"},

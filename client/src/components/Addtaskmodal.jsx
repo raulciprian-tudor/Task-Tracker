@@ -29,6 +29,7 @@ export default function AddTaskModal({ onClose, onTaskCreated }) {
                 exit={{ opacity: 0, scale: 0.96, y: 12 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
+                onClick={(e) => e.stopPropagation()}
             >
                 <div className="bg-white rounded-2xl border border-stone-100 shadow-xl shadow-stone-200/60 overflow-hidden">
                     <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-stone-50">
