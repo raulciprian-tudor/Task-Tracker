@@ -1,0 +1,16 @@
+[
+  {
+    "id": "f00f5d0e-05f0-4456-af3f-930133e81b07",
+    "description": "My second Task",
+    "status": "todo",
+    "createdAt": "2026-04-29T18:56:44.698Z",
+    "updatedAt": "2026-04-29T18:56:44.698Z"
+  },
+  {
+    "id": "fdfebb28-9eeb-4e3f-84b8-0e271051f3ac",
+    "description": "Updated description",
+    "status": "done",
+    "createdAt": "2026-04-29T19:14:21.916Z",
+    "updatedAt": "2026-04-29T19:18:52.428Z"
+  }
+]

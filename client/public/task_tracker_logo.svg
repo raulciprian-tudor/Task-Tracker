@@ -1,0 +1,56 @@
+<svg width="1254" height="1254" viewBox="0 0 1254 1254" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blueStroke" x1="348" y1="247" x2="911" y2="854" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1E92FF"/>
+      <stop offset="1" stop-color="#2764FF"/>
+    </linearGradient>
+    <linearGradient id="clipGrad" x1="504" y1="181" x2="746" y2="346" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5C7CFF"/>
+      <stop offset="1" stop-color="#3958E8"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="447" y1="394" x2="545" y2="492" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29D95B"/>
+      <stop offset="1" stop-color="#12B846"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="447" y1="527" x2="545" y2="625" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC325"/>
+      <stop offset="1" stop-color="#FF9D00"/>
+    </linearGradient>
+    <linearGradient id="textBlue" x1="527" y1="913" x2="1053" y2="1018" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4D85FF"/>
+      <stop offset="1" stop-color="#2462FF"/>
+    </linearGradient>
+    <filter id="softShadow" x="250" y="150" width="760" height="760" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#1E3A8A" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1254" height="1254" fill="#FFFFFF"/>
+
+  <!-- Clipboard icon -->
+  <g filter="url(#softShadow)">
+    <rect x="361" y="273" width="532" height="532" rx="89" stroke="url(#blueStroke)" stroke-width="52"/>
+    <rect x="385" y="300" width="484" height="502" rx="68" fill="#FFFFFF"/>
+    <path d="M551 247C562 207 591 181 625 181C659 181 688 207 699 247H806C828 247 746 265 746 287V309C746 331 728 349 706 349H544C522 349 504 331 504 309V287C504 265 529 247 551 247Z" fill="url(#clipGrad)"/>
+    <circle cx="625" cy="249" r="24" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Task row 1 -->
+  <circle cx="496" cy="443" r="49" fill="url(#greenGrad)"/>
+  <path d="M472 443L490 461L519 430" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="580" y="431" width="221" height="27" rx="13.5" fill="#374151"/>
+
+  <!-- Task row 2 -->
+  <circle cx="496" cy="577" r="49" fill="url(#orangeGrad)"/>
+  <path d="M472 577L490 595L519 564" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="580" y="564" width="189" height="27" rx="13.5" fill="#374151"/>
+
+  <!-- Task row 3 -->
+  <circle cx="496" cy="704" r="41" stroke="#4F70F5" stroke-width="16" fill="#FFFFFF"/>
+  <rect x="580" y="689" width="165" height="26" rx="13" fill="#D9DDE5"/>
+
+  <!-- Wordmark -->
+  <text x="196" y="1028" font-family="Inter, Arial, Helvetica, sans-serif" font-size="146" font-weight="800" letter-spacing="-5">
+    <tspan fill="#101933">Task</tspan><tspan fill="url(#textBlue)">Tracker</tspan>
+  </text>
+</svg>

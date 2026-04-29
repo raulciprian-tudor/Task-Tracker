@@ -1,0 +1,29 @@
+### Get all tasks
+GET http://localhost:3000/api/tasks
+
+### Add new tasks
+POST http://localhost:3000/api/tasks
+Content-Type: application/json
+
+{
+  "description": "My third Task"
+}
+
+### Delete task
+DELETE http://localhost:3000/api/tasks/cf2b0858-4705-4b97-8db0-a450a12ede01
+
+### Update task
+PUT http://localhost:3000/api/tasks/fdfebb28-9eeb-4e3f-84b8-0e271051f3ac
+Content-Type: application/json
+
+{
+  "description": "Updated description"
+}
+
+### Update task status
+PATCH http://localhost:3000/api/tasks/fdfebb28-9eeb-4e3f-84b8-0e271051f3ac/status
+Content-Type: application/json
+
+{
+  "status": "done"
+}

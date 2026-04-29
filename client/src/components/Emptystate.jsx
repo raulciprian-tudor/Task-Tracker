@@ -1,0 +1,32 @@
+import { motion } from "motion/react"
+
+const MESSAGES = {
+    all: { heading: "No tasks yet", sub: "Add your first task to get started." },
+    todo: { heading: "Nothing to do", sub: "All caught up — or add something new." },
+    "in-progress": { heading: "Nothing in progress", sub: "Start working on a task to see it here." },
+    done: { heading: "Nothing done yet", sub: "Completed tasks will appear here." },
+}
+
+export default function EmptyState({ filter }) {
+    const { heading, sub } = MESSAGES[filter] || MESSAGES.all
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center justify-center py-24 text-center"
+        >
+            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <rect x="3" y="5" width="14" height="2" rx="1" fill="#d6d3d1" />
+                    <rect x="3" y="9" width="10" height="2" rx="1" fill="#d6d3d1" />
+                    <rect x="3" y="13" width="7" height="2" rx="1" fill="#d6d3d1" />
+                </svg>
+            </div>
+            <p className="text-sm font-medium text-stone-700 mb-1">{heading}</p>
+            <p className="text-sm text-stone-400">{sub}</p>
+        </motion.div>
+    )
+}
