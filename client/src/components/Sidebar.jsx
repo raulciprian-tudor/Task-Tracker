@@ -8,7 +8,7 @@ const FILTERS = [
     {label: "Done", value: "done"},
 ]
 
-export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort, themeKey, onThemeChange}) {
+export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort, themeKey, onThemeChange, user, onLogout}) {
     const count = (val) => val === "all"
         ? tasks.filter(t => t.status !== 'done').length
         : tasks.filter(t => t.status === val).length
@@ -18,6 +18,32 @@ export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort,
     return (
         <aside className="w-56 xl:w-64 flex-shrink-0">
             <div className="sticky top-20 flex flex-col gap-3">
+
+                {/* User card */}
+                <div className="rounded-2xl p-4 border transition-colors duration-300"
+                     style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0"
+                                 style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+                                {user?.email?.[0].toUpperCase()}
+                            </div>
+                            <span className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                                {user?.email}
+                            </span>
+                        </div>
+                        <button
+                            onClick={onLogout}
+                            className="text-xs px-2 py-1 rounded-lg cursor-pointer transition-all flex-shrink-0 ml-2"
+                            style={{ color: 'var(--text-subtle)' }}
+                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                            Sign out
+                        </button>
+                    </div>
+                </div>
+
                 <div className="rounded-2xl p-4 border transition-colors duration-300"
                      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <p className="text-xs font-medium uppercase tracking-wider mb-3"
@@ -80,7 +106,6 @@ export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort,
                     Add task
                 </button>
 
-                {/* Theme picker */}
                 <div className="rounded-2xl p-4 border transition-colors duration-300"
                      style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <p className="text-xs font-medium uppercase tracking-wider mb-3"

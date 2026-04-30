@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 
-export default function AddTaskModal({ onClose, onTaskCreated, onError }) {
+export default function AddTaskModal({ onClose, onTaskCreated, onError, token }) {
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('medium')
     const [dueDate, setDueDate] = useState('')
@@ -10,7 +10,10 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError }) {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     description,
                     priority,

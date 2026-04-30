@@ -19,7 +19,7 @@ function formatDate(iso) {
     })
 }
 
-export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUpdated, onError}) {
+export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUpdated, onError, token}) {
     const [menuOpen, setMenuOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [editDescription, setEditDescription] = useState(task.description)
@@ -28,9 +28,17 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
     const config = STATUS_CONFIG[task.status]
     const priorityConfig = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium
 
+    const authHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    }
+
     const handleDelete = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, { method: 'DELETE' })
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
             const data = await response.json()
             if (!data.success) return onError(data.message)
             onTaskDeleted(task.id)
@@ -44,7 +52,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/status`, {
                 method: 'PATCH',
-                headers: {'Content-Type': 'application/json'},
+                headers: authHeaders,
                 body: JSON.stringify({status: newStatus})
             })
             const data = await response.json()
@@ -60,7 +68,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/priority`, {
                 method: 'PATCH',
-                headers: {'Content-Type': 'application/json'},
+                headers: authHeaders,
                 body: JSON.stringify({priority: newPriority})
             })
             const data = await response.json()
@@ -76,7 +84,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/due-date`, {
                 method: 'PATCH',
-                headers: {'Content-Type': 'application/json'},
+                headers: authHeaders,
                 body: JSON.stringify({dueDate: editDueDate ? new Date(editDueDate).toISOString() : null})
             })
             const data = await response.json()
@@ -98,7 +106,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
+                headers: authHeaders,
                 body: JSON.stringify({description: editDescription})
             })
             const data = await response.json()
@@ -117,7 +125,6 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
 
     useEffect(() => {
         const handleClickOutside = () => setMenuOpen(false)
-
         if (menuOpen) document.addEventListener('click', handleClickOutside)
         return () => document.removeEventListener('click', handleClickOutside)
     }, [menuOpen])
