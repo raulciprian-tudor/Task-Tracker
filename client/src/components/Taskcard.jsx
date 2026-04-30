@@ -19,20 +19,24 @@ function formatDate(iso) {
     })
 }
 
-export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUpdated}) {
+export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUpdated, onError}) {
     const [menuOpen, setMenuOpen] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [editDescription, setEditDescription] = useState(task.description)
+    const [isEditingDueDate, setIsEditingDueDate] = useState(false)
+    const [editDueDate, setEditDueDate] = useState(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '')
     const config = STATUS_CONFIG[task.status]
     const priorityConfig = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium
 
     const handleDelete = async () => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, { method: 'DELETE' })
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, { method: 'DELETE' })
+            const data = await response.json()
+            if (!data.success) return onError(data.message)
             onTaskDeleted(task.id)
             setMenuOpen(false)
         } catch (error) {
-            console.error('Failed to delete task', error)
+            onError('Failed to delete task')
         }
     }
 
@@ -44,10 +48,11 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                 body: JSON.stringify({status: newStatus})
             })
             const data = await response.json()
+            if (!data.success) return onError(data.message)
             onStatusUpdated(data.data)
             setMenuOpen(false)
         } catch (error) {
-            console.error('Failed to update task status', error)
+            onError('Failed to update task status')
         }
     }
 
@@ -59,10 +64,28 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                 body: JSON.stringify({priority: newPriority})
             })
             const data = await response.json()
+            if (!data.success) return onError(data.message)
             onTaskUpdated(data.data)
             setMenuOpen(false)
         } catch (error) {
-            console.error('Failed to update task priority', error)
+            onError('Failed to update task priority')
+        }
+    }
+
+    const handleDueDateUpdate = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/due-date`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dueDate: editDueDate ? new Date(editDueDate).toISOString() : null})
+            })
+            const data = await response.json()
+            if (!data.success) return onError(data.message)
+            onTaskUpdated(data.data)
+            setIsEditingDueDate(false)
+            setMenuOpen(false)
+        } catch (error) {
+            onError('Failed to update due date')
         }
     }
 
@@ -79,10 +102,11 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                 body: JSON.stringify({description: editDescription})
             })
             const data = await response.json()
+            if (!data.success) return onError(data.message)
             onTaskUpdated(data.data)
             setIsEditing(false)
         } catch (error) {
-            console.error('Failed to update task', error)
+            onError('Failed to update task')
         }
     }
 
@@ -122,6 +146,20 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 {task.description}
                             </p>
                         )}
+
+                        {isEditingDueDate && (
+                            <div className="flex items-center gap-2 mt-2">
+                                <input
+                                    type="date"
+                                    value={editDueDate}
+                                    onChange={(e) => setEditDueDate(e.target.value)}
+                                    className="text-sm text-stone-700 bg-stone-50 border border-stone-200 rounded-lg px-3 py-1 focus:outline-none focus:border-stone-400 transition-all"
+                                />
+                                <button onClick={handleDueDateUpdate} className="text-xs font-medium bg-stone-900 text-white px-3 py-1 rounded-lg hover:bg-stone-700 cursor-pointer transition-all">Save</button>
+                                <button onClick={() => setIsEditingDueDate(false)} className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1 rounded-lg hover:bg-stone-100 cursor-pointer transition-all">Cancel</button>
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${config.badge}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}/>
@@ -168,11 +206,11 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 className="absolute right-0 top-8 z-20 bg-white border border-stone-100 rounded-xl shadow-lg shadow-stone-100 py-1 w-44 overflow-hidden"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <button
-                                    onClick={handleEdit}
-                                    className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer"
-                                >
+                                <button onClick={handleEdit} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
                                     Edit
+                                </button>
+                                <button onClick={() => { setIsEditingDueDate(true); setMenuOpen(false) }} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
+                                    Set due date
                                 </button>
                                 <div className="h-px bg-stone-100 my-1"/>
                                 {[
@@ -180,11 +218,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                     {label: "Mark in progress", status: "in-progress"},
                                     {label: "Mark done", status: "done"}
                                 ].map((action) => (
-                                    <button
-                                        key={action.status}
-                                        onClick={() => handleStatusUpdate(action.status)}
-                                        className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer"
-                                    >
+                                    <button key={action.status} onClick={() => handleStatusUpdate(action.status)} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
                                         {action.label}
                                     </button>
                                 ))}
@@ -194,19 +228,12 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                     {label: "Medium priority", priority: "medium"},
                                     {label: "High priority", priority: "high"}
                                 ].map((action) => (
-                                    <button
-                                        key={action.priority}
-                                        onClick={() => handlePriorityUpdate(action.priority)}
-                                        className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer"
-                                    >
+                                    <button key={action.priority} onClick={() => handlePriorityUpdate(action.priority)} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
                                         {action.label}
                                     </button>
                                 ))}
                                 <div className="h-px bg-stone-100 my-1"/>
-                                <button
-                                    onClick={handleDelete}
-                                    className="w-full text-left text-sm text-red-500 hover:bg-red-50 px-3 py-2 transition-colors duration-100 cursor-pointer"
-                                >
+                                <button onClick={handleDelete} className="w-full text-left text-sm text-red-500 hover:bg-red-50 px-3 py-2 transition-colors duration-100 cursor-pointer">
                                     Delete
                                 </button>
                             </motion.div>

@@ -1,24 +1,29 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 
-export default function AddTaskModal({ onClose, onTaskCreated }) {
+export default function AddTaskModal({ onClose, onTaskCreated, onError }) {
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('medium')
     const [dueDate, setDueDate] = useState('')
 
     const handleCreate = async () => {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                description,
-                priority,
-                dueDate: dueDate ? new Date(dueDate).toISOString() : null
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description,
+                    priority,
+                    dueDate: dueDate ? new Date(dueDate).toISOString() : null
+                })
             })
-        })
-        const data = await response.json()
-        onTaskCreated(data.data)
-        onClose()
+            const data = await response.json()
+            if (!data.success) return onError(data.message)
+            onTaskCreated(data.data)
+            onClose()
+        } catch (error) {
+            onError('Failed to create task')
+        }
     }
 
     return (

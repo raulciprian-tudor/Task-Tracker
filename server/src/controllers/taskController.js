@@ -57,7 +57,7 @@ export const updateTask = async (req, res) => {
             data: {
                 description: description.trim(),
                 ...(priority && {priority}),
-                ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null})
+                ...(dueDate !== undefined && {dueDate: dueDate ? new Date(dueDate) : null})
             }
         })
 
@@ -104,10 +104,11 @@ export const updateTaskStatus = async (req, res) => {
     }
 }
 
+// PUT /api/tasks/:id/priority
 export const updateTaskPriority = async (req, res) => {
     try {
-        const { id } = req.params
-        const { priority } = req.body
+        const {id} = req.params
+        const {priority} = req.body
         const validPriorities = ['low', 'medium', 'high']
 
         if (!validPriorities.includes(priority)) {
@@ -115,12 +116,37 @@ export const updateTaskPriority = async (req, res) => {
         }
 
         const task = await prisma.task.update({
-            where: { id },
-            data: { priority: priority }
+            where: {id},
+            data: {priority: priority}
         })
 
-        res.status(200).json({ success: true, data: task })
+        res.status(200).json({success: true, data: task})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task priority'})
+    }
+}
+
+// PUT /api/tasks/:id/due-date
+export const updateTaskDueDate = async (req, res) => {
+    try {
+        const {id} = req.params
+        const {dueDate} = req.body
+
+        const date = new Date(dueDate)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        if (date < today) {
+            return res.status(400).json({success: false, message: 'Due date cannot be in the past'})
+        }
+
+        const task = await prisma.task.update({
+            where: {id},
+            data: {dueDate: new Date(dueDate)}
+        })
+
+        res.status(200).json({success: true, data: task})
+    } catch (error) {
+        res.status(500).json({success: false, message: 'Failed to update task due date'})
     }
 }
