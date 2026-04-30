@@ -27,8 +27,10 @@ function formatDate(iso) {
     })
 }
 
-export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
+export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUpdated}) {
     const [menuOpen, setMenuOpen] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editDescription, setEditDescription] = useState(task.description)
     const config = STATUS_CONFIG[task.status]
 
     const handleDelete = async () => {
@@ -36,7 +38,6 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
             await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, {
                 method: 'DELETE'
             })
-
             onTaskDeleted(task.id)
             setMenuOpen(false)
         } catch (error) {
@@ -51,7 +52,6 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({status: newStatus})
             })
-
             const data = await response.json()
             onStatusUpdated(data.data)
             setMenuOpen(false)
@@ -60,34 +60,70 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
         }
     }
 
+    const handleEdit = () => {
+        setIsEditing(true)
+        setMenuOpen(false)
+    }
+
+    const handleSave = async () => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({description: editDescription})
+            })
+            const data = await response.json()
+            onTaskUpdated(data.data)
+            setIsEditing(false)
+        } catch (error) {
+            console.error('Failed to update task', error)
+        }
+    }
+
+    const handleCancel = () => {
+        setEditDescription(task.description)
+        setIsEditing(false)
+    }
+
     return (
-        <div
-            className="relative group bg-white border border-stone-100 rounded-xl px-5 py-4 hover:border-stone-200 hover:shadow-sm transition-all duration-200">
+        <div className="relative group bg-white border border-stone-100 rounded-xl px-5 py-4 hover:border-stone-200 hover:shadow-sm transition-all duration-200">
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <button
-                        className="mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 border-stone-200 hover:border-stone-400 transition-colors duration-150 cursor-pointer flex items-center justify-center">
+                    <button className="mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 border-stone-200 hover:border-stone-400 transition-colors duration-150 cursor-pointer flex items-center justify-center">
                         {task.status === "done" && (
                             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                <path d="M1 4l3 3 5-6" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round"
-                                      strokeLinejoin="round"/>
+                                <path d="M1 4l3 3 5-6" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         )}
                     </button>
 
                     <div className="flex-1 min-w-0">
-                        <p className={`text-sm leading-relaxed ${task.status === "done" ? "line-through text-stone-400" : "text-stone-800"}`}>
-                            {task.description}
-                        </p>
+                        {isEditing ? (
+                            <div className="flex flex-col gap-2">
+                                <input
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    className="w-full text-sm text-stone-800 bg-stone-50 border border-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-stone-400 transition-all duration-150"
+                                    autoFocus
+                                />
+                                <div className="flex gap-2">
+                                    <button onClick={handleSave} className="text-xs font-medium bg-stone-900 text-white px-3 py-1 rounded-lg hover:bg-stone-700 cursor-pointer transition-all">Save</button>
+                                    <button onClick={handleCancel} className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1 rounded-lg hover:bg-stone-100 cursor-pointer transition-all">Cancel</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className={`text-sm leading-relaxed ${task.status === "done" ? "line-through text-stone-400" : "text-stone-800"}`}>
+                                {task.description}
+                            </p>
+                        )}
                         <div className="flex items-center gap-3 mt-2">
-              <span
-                  className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${config.badge}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}/>
-                  {config.label}
-              </span>
+                            <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${config.badge}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}/>
+                                {config.label}
+                            </span>
                             <span className="text-xs text-stone-400">
-                Updated {formatDate(task.updatedAt)}
-              </span>
+                                Updated {formatDate(task.updatedAt)}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -114,6 +150,12 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated}) {
                                 className="absolute right-0 top-8 z-20 bg-white border border-stone-100 rounded-xl shadow-lg shadow-stone-100 py-1 w-40 overflow-hidden"
                                 onClick={(e) => e.stopPropagation()}
                             >
+                                <button
+                                    onClick={handleEdit}
+                                    className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer"
+                                >
+                                    Edit
+                                </button>
                                 {[
                                     {label: "Mark to do", status: "todo"},
                                     {label: "Mark in progress", status: "in-progress"},

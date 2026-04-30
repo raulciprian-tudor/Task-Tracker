@@ -32,6 +32,10 @@ export default function App() {
         setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task))
     }
 
+    const handleTaskUpdated = (updatedTask) => {
+        setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task))
+    }
+
     useEffect(() => {
         const fetchTasks = async () => {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?sort=${sort}`)
@@ -123,7 +127,8 @@ export default function App() {
                                                     exit={{opacity: 0, y: -8}}
                                                     transition={{duration: 0.3, delay: i * 0.05}}>
                                             <TaskCard task={task} onTaskDeleted={handleTaskDeleted}
-                                                      onStatusUpdated={handleStatusUpdated}/>
+                                                      onStatusUpdated={handleStatusUpdated}
+                                                      onTaskUpdated={handleTaskUpdated}/>
                                         </motion.div>
                                     ))}
                                 </motion.div>
