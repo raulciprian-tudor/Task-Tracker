@@ -18,15 +18,16 @@ export default function EmptyState({ filter }) {
             transition={{ duration: 0.3 }}
             className="flex flex-col items-center justify-center py-24 text-center"
         >
-            <div className="w-12 h-12 rounded-2xl bg-stone-100 flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+                 style={{ backgroundColor: 'var(--border)' }}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <rect x="3" y="5" width="14" height="2" rx="1" fill="#d6d3d1" />
-                    <rect x="3" y="9" width="10" height="2" rx="1" fill="#d6d3d1" />
-                    <rect x="3" y="13" width="7" height="2" rx="1" fill="#d6d3d1" />
+                    <rect x="3" y="5" width="14" height="2" rx="1" fill="var(--text-subtle)" />
+                    <rect x="3" y="9" width="10" height="2" rx="1" fill="var(--text-subtle)" />
+                    <rect x="3" y="13" width="7" height="2" rx="1" fill="var(--text-subtle)" />
                 </svg>
             </div>
-            <p className="text-sm font-medium text-stone-700 mb-1">{heading}</p>
-            <p className="text-sm text-stone-400">{sub}</p>
+            <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>{heading}</p>
+            <p className="text-sm" style={{ color: 'var(--text-subtle)' }}>{sub}</p>
         </motion.div>
     )
 }

@@ -4,6 +4,7 @@ import TaskCard from './components/TaskCard.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import AddTaskModal from './components/AddTaskModal.jsx'
 import EmptyState from './components/EmptyState.jsx'
+import { THEMES } from './themes.js'
 
 const FILTERS = [
     {label: "All", value: "all"},
@@ -26,7 +27,8 @@ function Toast({ message, type, onClose }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-stone-900 text-white text-sm px-4 py-3 rounded-xl shadow-lg whitespace-nowrap"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 text-sm px-4 py-3 rounded-xl shadow-lg whitespace-nowrap"
         >
             {isError ? (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -40,7 +42,7 @@ function Toast({ message, type, onClose }) {
                 </svg>
             )}
             <span>{message}</span>
-            <button onClick={onClose} className="ml-2 text-stone-400 hover:text-white transition-colors cursor-pointer">
+            <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
@@ -55,6 +57,14 @@ export default function App() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [sort, setSort] = useState('desc')
     const [toast, setToast] = useState(null)
+    const [themeKey, setThemeKey] = useState(() => localStorage.getItem('theme') || 'light')
+
+    const theme = THEMES[themeKey]
+
+    const handleThemeChange = (key) => {
+        setThemeKey(key)
+        localStorage.setItem('theme', key)
+    }
 
     const showError = (message) => setToast({ message, type: 'error' })
     const showSuccess = (message) => setToast({ message, type: 'success' })
@@ -89,31 +99,45 @@ export default function App() {
             const data = await response.json()
             setTasks(data.data)
         }
-
         fetchTasks()
     }, [sort])
 
+    const cssVars = {
+        '--bg': theme.bg,
+        '--header': theme.header,
+        '--card': theme.card,
+        '--border': theme.border,
+        '--text': theme.text,
+        '--text-muted': theme.textMuted,
+        '--text-subtle': theme.textSubtle,
+        '--accent': theme.accent,
+        '--accent-text': theme.accentText,
+    }
+
     return (
-        <div className="min-h-screen bg-[#FAFAF8]">
+        <div style={{ ...cssVars, backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="min-h-screen transition-colors duration-300">
 
             <motion.header
                 initial={{opacity: 0, y: -12}} animate={{opacity: 1, y: 0}}
                 transition={{duration: 0.4, ease: "easeOut"}}
-                className="bg-white border-b border-stone-100 sticky top-0 z-10"
+                style={{ backgroundColor: 'var(--header)', borderColor: 'var(--border)' }}
+                className="border-b sticky top-0 z-10 transition-colors duration-300"
             >
                 <div className="max-w-6xl mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between h-14 sm:h-16">
                         <div className="flex items-center gap-3">
-                            <span className="text-xl sm:text-[22px] tracking-tight font-medium text-stone-800"
-                                  style={{fontFamily: "'DM Serif Display', Georgia, serif"}}>
+                            <span className="text-xl sm:text-[22px] tracking-tight font-medium"
+                                  style={{color: 'var(--text)', fontFamily: "'DM Serif Display', Georgia, serif"}}>
                                 Tasks
                             </span>
-                            <span className="text-xs font-medium bg-stone-100 text-stone-500 rounded-full px-2 py-0.5 tabular-nums">
-                                {tasks.length}
+                            <span className="text-xs font-medium rounded-full px-2 py-0.5 tabular-nums"
+                                  style={{ backgroundColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                                {tasks.filter(t => t.status !== 'done').length}
                             </span>
                         </div>
                         <button onClick={() => setIsModalOpen(true)}
-                                className="lg:hidden flex items-center gap-1.5 text-sm font-medium bg-stone-900 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full hover:bg-stone-700 active:scale-95 transition-all duration-150 cursor-pointer">
+                                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+                                className="lg:hidden flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 sm:px-4 sm:py-2 rounded-full active:scale-95 transition-all duration-150 cursor-pointer">
                             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                 <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                             </svg>
@@ -121,19 +145,53 @@ export default function App() {
                         </button>
                     </div>
 
+                    {/* Filter tabs — mobile only */}
                     <nav className="flex gap-0 -mb-px lg:hidden overflow-x-auto">
                         {FILTERS.map((f) => (
                             <button key={f.value} onClick={() => setFilter(f.value)}
-                                    className={`relative flex-shrink-0 text-sm px-4 py-3 transition-colors duration-150 cursor-pointer ${filter === f.value ? "text-stone-900 font-medium" : "text-stone-400 hover:text-stone-600"}`}>
+                                    style={{ color: filter === f.value ? 'var(--text)' : 'var(--text-subtle)' }}
+                                    className="relative flex-shrink-0 text-sm px-4 py-3 transition-colors duration-150 cursor-pointer font-medium">
                                 {f.label}
                                 {filter === f.value && (
                                     <motion.div layoutId="active-filter"
-                                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-stone-900 rounded-full"
+                                                style={{ backgroundColor: 'var(--accent)' }}
+                                                className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
                                                 transition={{type: "spring", stiffness: 400, damping: 30}}/>
                                 )}
                             </button>
                         ))}
                     </nav>
+
+                    {/* Mobile toolbar — sort + theme */}
+                    <div className="lg:hidden flex items-center justify-between py-2 border-t"
+                         style={{ borderColor: 'var(--border)' }}>
+                        <button
+                            onClick={() => setSort(prev => prev === 'desc' ? 'asc' : 'desc')}
+                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                            style={{ color: 'var(--text-muted)', backgroundColor: 'var(--border)' }}
+                        >
+                            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                                <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            {sort === 'desc' ? 'Newest first' : 'Oldest first'}
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                            {Object.entries(THEMES).map(([key, t]) => (
+                                <button
+                                    key={key}
+                                    onClick={() => handleThemeChange(key)}
+                                    title={t.name}
+                                    className="w-6 h-6 rounded-full transition-all duration-150 cursor-pointer"
+                                    style={{
+                                        backgroundColor: t.swatch,
+                                        border: `2px solid ${themeKey === key ? 'var(--accent)' : t.swatchBorder}`,
+                                        transform: themeKey === key ? 'scale(1.2)' : 'scale(1)',
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </motion.header>
 
@@ -145,15 +203,23 @@ export default function App() {
                         transition={{duration: 0.4, ease: "easeOut"}}
                         className="hidden lg:block"
                     >
-                        <Sidebar tasks={tasks} filter={filter} setFilter={setFilter} onAdd={() => setIsModalOpen(true)}
-                                 sort={sort} setSort={setSort}/>
+                        <Sidebar
+                            tasks={tasks}
+                            filter={filter}
+                            setFilter={setFilter}
+                            onAdd={() => setIsModalOpen(true)}
+                            sort={sort}
+                            setSort={setSort}
+                            themeKey={themeKey}
+                            onThemeChange={handleThemeChange}
+                        />
                     </motion.div>
 
                     <div className="flex-1 min-w-0">
                         <div className="hidden lg:flex items-center justify-between mb-5">
-                            <h2 className="text-sm font-medium text-stone-500">
+                            <h2 className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                                 {filter === "all" ? "All tasks" : FILTERS.find(f => f.value === filter)?.label}
-                                <span className="ml-2 tabular-nums text-stone-300">{filtered.length}</span>
+                                <span className="ml-2 tabular-nums" style={{ color: 'var(--text-subtle)' }}>{filtered.length}</span>
                             </h2>
                         </div>
 

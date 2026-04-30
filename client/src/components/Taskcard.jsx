@@ -1,4 +1,4 @@
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import {motion, AnimatePresence} from "motion/react"
 
 const STATUS_CONFIG = {
@@ -115,14 +115,27 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
         setIsEditing(false)
     }
 
+    useEffect(() => {
+        const handleClickOutside = () => setMenuOpen(false)
+
+        if (menuOpen) document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
+    }, [menuOpen])
+
     return (
-        <div className="relative group bg-white border border-stone-100 rounded-xl px-5 py-4 hover:border-stone-200 hover:shadow-sm transition-all duration-200">
+        <div
+            className="relative group rounded-xl px-5 py-4 border transition-all duration-200"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <button className="mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 border-stone-200 hover:border-stone-400 transition-colors duration-150 cursor-pointer flex items-center justify-center">
+                    <button
+                        className="mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 transition-colors duration-150 cursor-pointer flex items-center justify-center"
+                        style={{ borderColor: 'var(--border)' }}
+                    >
                         {task.status === "done" && (
                             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                <path d="M1 4l3 3 5-6" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M1 4l3 3 5-6" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         )}
                     </button>
@@ -133,16 +146,27 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 <input
                                     value={editDescription}
                                     onChange={(e) => setEditDescription(e.target.value)}
-                                    className="w-full text-sm text-stone-800 bg-stone-50 border border-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-stone-400 transition-all duration-150"
+                                    className="w-full text-sm rounded-lg px-3 py-1.5 focus:outline-none transition-all duration-150 border"
+                                    style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                                     autoFocus
                                 />
                                 <div className="flex gap-2">
-                                    <button onClick={handleSave} className="text-xs font-medium bg-stone-900 text-white px-3 py-1 rounded-lg hover:bg-stone-700 cursor-pointer transition-all">Save</button>
-                                    <button onClick={handleCancel} className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1 rounded-lg hover:bg-stone-100 cursor-pointer transition-all">Cancel</button>
+                                    <button onClick={handleSave}
+                                            className="text-xs font-medium px-3 py-1 rounded-lg cursor-pointer transition-all"
+                                            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+                                        Save
+                                    </button>
+                                    <button onClick={handleCancel}
+                                            className="text-xs px-3 py-1 rounded-lg cursor-pointer transition-all"
+                                            style={{ color: 'var(--text-muted)', backgroundColor: 'var(--border)' }}>
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
                         ) : (
-                            <p className={`text-sm leading-relaxed ${task.status === "done" ? "line-through text-stone-400" : "text-stone-800"}`}>
+                            <p className="text-sm leading-relaxed"
+                               style={{ color: task.status === "done" ? 'var(--text-subtle)' : 'var(--text)',
+                                   textDecoration: task.status === "done" ? 'line-through' : 'none' }}>
                                 {task.description}
                             </p>
                         )}
@@ -153,10 +177,19 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                     type="date"
                                     value={editDueDate}
                                     onChange={(e) => setEditDueDate(e.target.value)}
-                                    className="text-sm text-stone-700 bg-stone-50 border border-stone-200 rounded-lg px-3 py-1 focus:outline-none focus:border-stone-400 transition-all"
+                                    className="text-sm rounded-lg px-3 py-1 focus:outline-none transition-all border"
+                                    style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                                 />
-                                <button onClick={handleDueDateUpdate} className="text-xs font-medium bg-stone-900 text-white px-3 py-1 rounded-lg hover:bg-stone-700 cursor-pointer transition-all">Save</button>
-                                <button onClick={() => setIsEditingDueDate(false)} className="text-xs text-stone-500 hover:text-stone-700 px-3 py-1 rounded-lg hover:bg-stone-100 cursor-pointer transition-all">Cancel</button>
+                                <button onClick={handleDueDateUpdate}
+                                        className="text-xs font-medium px-3 py-1 rounded-lg cursor-pointer transition-all"
+                                        style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
+                                    Save
+                                </button>
+                                <button onClick={() => setIsEditingDueDate(false)}
+                                        className="text-xs px-3 py-1 rounded-lg cursor-pointer transition-all"
+                                        style={{ color: 'var(--text-muted)', backgroundColor: 'var(--border)' }}>
+                                    Cancel
+                                </button>
                             </div>
                         )}
 
@@ -169,7 +202,8 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 {priorityConfig.label}
                             </span>
                             {task.dueDate && (
-                                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-stone-50 text-stone-500">
+                                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+                                      style={{ backgroundColor: 'var(--border)', color: 'var(--text-muted)' }}>
                                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                                         <rect x="1" y="2" width="8" height="7" rx="1" stroke="currentColor" strokeWidth="1.2"/>
                                         <path d="M3 1v2M7 1v2M1 5h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
@@ -177,7 +211,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                     {new Date(task.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                                 </span>
                             )}
-                            <span className="text-xs text-stone-400">
+                            <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
                                 Updated {formatDate(task.updatedAt)}
                             </span>
                         </div>
@@ -186,13 +220,16 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
 
                 <div className="relative shrink-0">
                     <button
-                        onClick={() => setMenuOpen(o => !o)}
-                        className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center hover:bg-stone-100 transition-all duration-150 cursor-pointer"
+                        onClick={(e) => { e.stopPropagation(); setMenuOpen(o => !o) }}
+                        className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer"
+                        style={{ color: 'var(--text-subtle)' }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                            <circle cx="7" cy="2.5" r="1" fill="#9ca3af"/>
-                            <circle cx="7" cy="7" r="1" fill="#9ca3af"/>
-                            <circle cx="7" cy="11.5" r="1" fill="#9ca3af"/>
+                            <circle cx="7" cy="2.5" r="1" fill="currentColor"/>
+                            <circle cx="7" cy="7" r="1" fill="currentColor"/>
+                            <circle cx="7" cy="11.5" r="1" fill="currentColor"/>
                         </svg>
                     </button>
 
@@ -203,37 +240,58 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 animate={{opacity: 1, scale: 1, y: 0}}
                                 exit={{opacity: 0, scale: 0.95, y: -4}}
                                 transition={{duration: 0.15, ease: "easeOut"}}
-                                className="absolute right-0 top-8 z-20 bg-white border border-stone-100 rounded-xl shadow-lg shadow-stone-100 py-1 w-44 overflow-hidden"
-                                onClick={(e) => e.stopPropagation()}
+                                className="absolute right-0 top-8 z-20 rounded-xl shadow-lg py-1 w-44 overflow-hidden border"
+                                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                             >
-                                <button onClick={handleEdit} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
-                                    Edit
-                                </button>
-                                <button onClick={() => { setIsEditingDueDate(true); setMenuOpen(false) }} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
-                                    Set due date
-                                </button>
-                                <div className="h-px bg-stone-100 my-1"/>
+                                {['Edit', 'Set due date'].map((label) => (
+                                    <button key={label}
+                                            onClick={label === 'Edit' ? handleEdit : () => { setIsEditingDueDate(true); setMenuOpen(false) }}
+                                            className="w-full text-left text-sm px-3 py-2 transition-colors duration-100 cursor-pointer"
+                                            style={{ color: 'var(--text-muted)' }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                                <div className="h-px my-1" style={{ backgroundColor: 'var(--border)' }}/>
                                 {[
                                     {label: "Mark to do", status: "todo"},
                                     {label: "Mark in progress", status: "in-progress"},
                                     {label: "Mark done", status: "done"}
                                 ].map((action) => (
-                                    <button key={action.status} onClick={() => handleStatusUpdate(action.status)} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
+                                    <button key={action.status}
+                                            onClick={() => handleStatusUpdate(action.status)}
+                                            className="w-full text-left text-sm px-3 py-2 transition-colors duration-100 cursor-pointer"
+                                            style={{ color: 'var(--text-muted)' }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    >
                                         {action.label}
                                     </button>
                                 ))}
-                                <div className="h-px bg-stone-100 my-1"/>
+                                <div className="h-px my-1" style={{ backgroundColor: 'var(--border)' }}/>
                                 {[
                                     {label: "Low priority", priority: "low"},
                                     {label: "Medium priority", priority: "medium"},
                                     {label: "High priority", priority: "high"}
                                 ].map((action) => (
-                                    <button key={action.priority} onClick={() => handlePriorityUpdate(action.priority)} className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer">
+                                    <button key={action.priority}
+                                            onClick={() => handlePriorityUpdate(action.priority)}
+                                            className="w-full text-left text-sm px-3 py-2 transition-colors duration-100 cursor-pointer"
+                                            style={{ color: 'var(--text-muted)' }}
+                                            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                                            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    >
                                         {action.label}
                                     </button>
                                 ))}
-                                <div className="h-px bg-stone-100 my-1"/>
-                                <button onClick={handleDelete} className="w-full text-left text-sm text-red-500 hover:bg-red-50 px-3 py-2 transition-colors duration-100 cursor-pointer">
+                                <div className="h-px my-1" style={{ backgroundColor: 'var(--border)' }}/>
+                                <button onClick={handleDelete}
+                                        className="w-full text-left text-sm px-3 py-2 transition-colors duration-100 cursor-pointer text-red-500"
+                                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
+                                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
                                     Delete
                                 </button>
                             </motion.div>
