@@ -1,30 +1,9 @@
-import {readFile, writeFile} from 'fs/promises'
-import {fileURLToPath} from 'url'
-import {randomUUID} from 'crypto'
-import path from 'path'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const DB_PATH = path.join(__dirname, '../data/tasks.json')
-
-// Helper - read tasks from file
-const readTasks = async () => {
-    try {
-        const data = await readFile(DB_PATH, 'utf-8')
-        return JSON.parse(data)
-    } catch {
-        return []
-    }
-}
-
-// Helper - write tasks to file
-const writeTasks = async (data) => {
-    await writeFile(DB_PATH, JSON.stringify(data, null, 2)); // write file expects a string - null, 2 just formats the JSON
-}
+import prisma from '../lib/prisma.js'
 
 // GET /api/tasks
 export const getAllTasks = async (req, res) => {
     try {
-        const tasks = await readTasks()
+        const tasks = await prisma.task.findMany()
         res.status(200).json({success: true, data: tasks})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to fetch tasks'})
@@ -34,18 +13,17 @@ export const getAllTasks = async (req, res) => {
 // POST /api/tasks
 export const createTask = async (req, res) => {
     try {
-        const tasks = await readTasks()
+        const {description} = req.body
 
-        const newTask = {
-            id: randomUUID(),
-            description: req.body.description,
-            status: "todo",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+        if (!description || description.trim() === '') {
+            return res.status(404).json({success: false, message: "Description is required"})
         }
 
-        tasks.push(newTask)
-        await writeTasks(tasks)
+        const newTask = await prisma.task.create({
+            data: {
+                description: description.trim()
+            }
+        })
 
         res.status(201).json({success: true, data: newTask}) // use status code 201 for success on POST
 
@@ -58,20 +36,18 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
     try {
         const {id} = req.params
-        const tasks = await readTasks()
+        const {description} = req.body
 
-        const index = tasks.findIndex(task => task.id === id)
-
-        if (index === -1) {
-            return res.status(404).json({success: false, message: 'Task not found'})
+        if (!description || description.trim() === '') {
+            return res.status(404).json({success: false, message: "Description is required"})
         }
 
-        tasks[index].description = req.body.description;
-        tasks[index].updatedAt = new Date().toISOString()
+        const task = await prisma.task.update({
+            where: {id},
+            data: {description: description.trim()}
+        })
 
-        await writeTasks(tasks)
-
-        res.status(200).json({success: true, data: tasks[index]})
+        res.status(200).json({success: true, data: task})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task'})
     }
@@ -81,17 +57,10 @@ export const updateTask = async (req, res) => {
 export const deleteTask = async (req, res) => {
     try {
         const {id} = req.params
-        const tasks = await readTasks()
-        let deletedTask = {}
 
-        const index = tasks.findIndex(task => task.id === id)
-
-        if (index === -1) {
-            return res.status(404).json({success: false, message: 'Task not found'})
-        }
-        deletedTask = tasks.splice(index, 1)[0]; // splice returns an array, so we add [0] to grab the first element
-
-        await writeTasks(tasks)
+        const deletedTask = await prisma.task.delete({
+            where: {id}
+        })
 
         res.status(200).json({success: true, data: deletedTask})
     } catch (error) {
@@ -106,24 +75,16 @@ export const updateTaskStatus = async (req, res) => {
         const {status} = req.body
         const validStatuses = ['todo', 'in-progress', 'done']
 
-        const tasks = await readTasks()
-
-        const index = tasks.findIndex(task => task.id === id)
-
-        if (index === -1) {
-            return res.status(404).json({success: false, message: 'Task not found'})
-        }
-
         if (!validStatuses.includes(status)) {
             return res.status(400).json({success: false, message: 'Invalid status value'})
         }
 
-        tasks[index].status = status
-        tasks[index].updatedAt = new Date().toISOString()
+        const task = await prisma.task.update({
+            where: {id},
+            data: {status: status}
+        })
 
-        await writeTasks(tasks)
-
-        res.status(200).json({success: true, data: tasks[index]})
+        res.status(200).json({success: true, data: task})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task status'})
     }
