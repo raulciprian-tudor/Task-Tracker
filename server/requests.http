@@ -48,3 +48,6 @@ Content-Type: application/json
   "email": "test@test.com",
   "password": "password123"
 }
+
+### Production - Get all tasks
+GET https://task-tracker-production-2a51.up.railway.app/api/tasks

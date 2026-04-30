@@ -4,6 +4,7 @@ import TaskCard from './components/TaskCard.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import AddTaskModal from './components/AddTaskModal.jsx'
 import EmptyState from './components/EmptyState.jsx'
+import AuthPage from './components/AuthPage.jsx'
 import { THEMES } from './themes.js'
 
 const FILTERS = [
@@ -58,12 +59,33 @@ export default function App() {
     const [sort, setSort] = useState('desc')
     const [toast, setToast] = useState(null)
     const [themeKey, setThemeKey] = useState(() => localStorage.getItem('theme') || 'light')
+    const [token, setToken] = useState(() => localStorage.getItem('token') || null)
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('user')
+        return saved ? JSON.parse(saved) : null
+    })
 
     const theme = THEMES[themeKey]
+    const isAuthenticated = !!token
 
     const handleThemeChange = (key) => {
         setThemeKey(key)
         localStorage.setItem('theme', key)
+    }
+
+    const handleAuthSuccess = (token, user) => {
+        setToken(token)
+        setUser(user)
+        localStorage.setItem('token', token)
+        localStorage.setItem('user', JSON.stringify(user))
+    }
+
+    const handleLogout = () => {
+        setToken(null)
+        setUser(null)
+        setTasks([])
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
     }
 
     const showError = (message) => setToast({ message, type: 'error' })
@@ -94,13 +116,20 @@ export default function App() {
     }
 
     useEffect(() => {
+        if (!token) return
         const fetchTasks = async () => {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?sort=${sort}`)
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?sort=${sort}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (response.status === 401) {
+                handleLogout()
+                return
+            }
             const data = await response.json()
             setTasks(data.data)
         }
         fetchTasks()
-    }, [sort])
+    }, [sort, token])
 
     const cssVars = {
         '--bg': theme.bg,
@@ -112,6 +141,17 @@ export default function App() {
         '--text-subtle': theme.textSubtle,
         '--accent': theme.accent,
         '--accent-text': theme.accentText,
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <div style={{ ...cssVars, backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="min-h-screen transition-colors duration-300">
+                <AuthPage onAuthSuccess={handleAuthSuccess} />
+                <AnimatePresence>
+                    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                </AnimatePresence>
+            </div>
+        )
     }
 
     return (
@@ -135,17 +175,27 @@ export default function App() {
                                 {tasks.filter(t => t.status !== 'done').length}
                             </span>
                         </div>
-                        <button onClick={() => setIsModalOpen(true)}
-                                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
-                                className="lg:hidden flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 sm:px-4 sm:py-2 rounded-full active:scale-95 transition-all duration-150 cursor-pointer">
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                            </svg>
-                            <span className="hidden sm:inline">Add task</span>
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <span className="hidden sm:block text-xs"
+                                  style={{ color: 'var(--text-subtle)' }}>
+                                {user?.email}
+                            </span>
+                            <button onClick={handleLogout}
+                                    className="hidden sm:flex text-xs px-3 py-1.5 rounded-lg cursor-pointer transition-all"
+                                    style={{ color: 'var(--text-muted)', backgroundColor: 'var(--border)' }}>
+                                Sign out
+                            </button>
+                            <button onClick={() => setIsModalOpen(true)}
+                                    style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}
+                                    className="lg:hidden flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 sm:px-4 sm:py-2 rounded-full active:scale-95 transition-all duration-150 cursor-pointer">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                </svg>
+                                <span className="hidden sm:inline">Add task</span>
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Filter tabs — mobile only */}
                     <nav className="flex gap-0 -mb-px lg:hidden overflow-x-auto">
                         {FILTERS.map((f) => (
                             <button key={f.value} onClick={() => setFilter(f.value)}
@@ -162,7 +212,6 @@ export default function App() {
                         ))}
                     </nav>
 
-                    {/* Mobile toolbar — sort + theme */}
                     <div className="lg:hidden flex items-center justify-between py-2 border-t"
                          style={{ borderColor: 'var(--border)' }}>
                         <button
@@ -175,20 +224,15 @@ export default function App() {
                             </svg>
                             {sort === 'desc' ? 'Newest first' : 'Oldest first'}
                         </button>
-
                         <div className="flex items-center gap-1.5">
                             {Object.entries(THEMES).map(([key, t]) => (
-                                <button
-                                    key={key}
-                                    onClick={() => handleThemeChange(key)}
-                                    title={t.name}
-                                    className="w-6 h-6 rounded-full transition-all duration-150 cursor-pointer"
-                                    style={{
-                                        backgroundColor: t.swatch,
-                                        border: `2px solid ${themeKey === key ? 'var(--accent)' : t.swatchBorder}`,
-                                        transform: themeKey === key ? 'scale(1.2)' : 'scale(1)',
-                                    }}
-                                />
+                                <button key={key} onClick={() => handleThemeChange(key)} title={t.name}
+                                        className="w-6 h-6 rounded-full transition-all duration-150 cursor-pointer"
+                                        style={{
+                                            backgroundColor: t.swatch,
+                                            border: `2px solid ${themeKey === key ? 'var(--accent)' : t.swatchBorder}`,
+                                            transform: themeKey === key ? 'scale(1.2)' : 'scale(1)',
+                                        }}/>
                             ))}
                         </div>
                     </div>
@@ -197,7 +241,6 @@ export default function App() {
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-10">
                 <div className="flex gap-8 xl:gap-12 items-start">
-
                     <motion.div
                         initial={{opacity: 0, x: -16}} animate={{opacity: 1, x: 0}}
                         transition={{duration: 0.4, ease: "easeOut"}}
@@ -212,6 +255,8 @@ export default function App() {
                             setSort={setSort}
                             themeKey={themeKey}
                             onThemeChange={handleThemeChange}
+                            user={user}
+                            onLogout={handleLogout}
                         />
                     </motion.div>
 
@@ -240,6 +285,7 @@ export default function App() {
                                                 onStatusUpdated={handleStatusUpdated}
                                                 onTaskUpdated={handleTaskUpdated}
                                                 onError={showError}
+                                                token={token}
                                             />
                                         </motion.div>
                                     ))}
@@ -247,7 +293,6 @@ export default function App() {
                             )}
                         </AnimatePresence>
                     </div>
-
                 </div>
             </div>
 
@@ -256,6 +301,7 @@ export default function App() {
                     onClose={() => setIsModalOpen(false)}
                     onTaskCreated={handleTaskCreated}
                     onError={showError}
+                    token={token}
                 />}
             </AnimatePresence>
 
