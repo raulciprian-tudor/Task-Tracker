@@ -7,6 +7,7 @@ export const getAllTasks = async (req, res) => {
         const order = sort === 'asc' ? 'asc' : 'desc'
 
         const tasks = await prisma.task.findMany({
+            where: {userId: req.user.userId},
             orderBy: {
                 createdAt: order
             }
@@ -24,14 +25,15 @@ export const createTask = async (req, res) => {
         const {description, priority, dueDate} = req.body
 
         if (!description || description.trim() === '') {
-            return res.status(404).json({success: false, message: "Description is required"})
+            return res.status(400).json({success: false, message: "Description is required"})
         }
 
         const newTask = await prisma.task.create({
             data: {
                 description: description.trim(),
                 priority: priority || 'medium',
-                dueDate: dueDate ? new Date(dueDate) : null
+                dueDate: dueDate ? new Date(dueDate) : null,
+                userId: req.user.userId
             }
         })
 
@@ -52,7 +54,17 @@ export const updateTask = async (req, res) => {
             return res.status(400).json({success: false, message: "Description is required"})
         }
 
-        const task = await prisma.task.update({
+        const task = await prisma.task.findUnique({where: {id}})
+
+        if (!task) {
+            return res.status(404).json({success: false, message: 'Task not found'})
+        }
+
+        if (task.userId !== req.user.userId) {
+            return res.status(403).json({success: false, message: 'Not authorized'})
+        }
+
+        const updatedTask = await prisma.task.update({
             where: {id},
             data: {
                 description: description.trim(),
@@ -61,7 +73,7 @@ export const updateTask = async (req, res) => {
             }
         })
 
-        res.status(200).json({success: true, data: task})
+        res.status(200).json({success: true, data: updatedTask})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task'})
     }
@@ -71,6 +83,16 @@ export const updateTask = async (req, res) => {
 export const deleteTask = async (req, res) => {
     try {
         const {id} = req.params
+
+        const task = await prisma.task.findUnique({where: {id}})
+
+        if (!task) {
+            return res.status(404).json({success: false, message: 'Task not found'})
+        }
+
+        if (task.userId !== req.user.userId) {
+            return res.status(403).json({success: false, message: 'Not authorized'})
+        }
 
         const deletedTask = await prisma.task.delete({
             where: {id}
@@ -93,12 +115,22 @@ export const updateTaskStatus = async (req, res) => {
             return res.status(400).json({success: false, message: 'Invalid status value'})
         }
 
-        const task = await prisma.task.update({
+        const task = await prisma.task.findUnique({where: {id}})
+
+        if (!task) {
+            return res.status(404).json({success: false, message: 'Task not found'})
+        }
+
+        if (task.userId !== req.user.userId) {
+            return res.status(403).json({success: false, message: 'Not authorized'})
+        }
+
+        const updatedTask = await prisma.task.update({
             where: {id},
             data: {status: status}
         })
 
-        res.status(200).json({success: true, data: task})
+        res.status(200).json({success: true, data: updatedTask})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task status'})
     }
@@ -115,12 +147,22 @@ export const updateTaskPriority = async (req, res) => {
             return res.status(400).json({success: false, message: "Invalid priority value"})
         }
 
-        const task = await prisma.task.update({
+        const task = await prisma.task.findUnique({where: {id}})
+
+        if (!task) {
+            return res.status(404).json({success: false, message: 'Task not found'})
+        }
+
+        if (task.userId !== req.user.userId) {
+            return res.status(403).json({success: false, message: 'Not authorized'})
+        }
+
+        const updatedTask = await prisma.task.update({
             where: {id},
             data: {priority: priority}
         })
 
-        res.status(200).json({success: true, data: task})
+        res.status(200).json({success: true, data: updatedTask})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task priority'})
     }
@@ -140,12 +182,22 @@ export const updateTaskDueDate = async (req, res) => {
             return res.status(400).json({success: false, message: 'Due date cannot be in the past'})
         }
 
-        const task = await prisma.task.update({
+        const task = await prisma.task.findUnique({where: {id}})
+
+        if (!task) {
+            return res.status(404).json({success: false, message: 'Task not found'})
+        }
+
+        if (task.userId !== req.user.userId) {
+            return res.status(403).json({success: false, message: 'Not authorized'})
+        }
+
+        const updatedTask = await prisma.task.update({
             where: {id},
             data: {dueDate: new Date(dueDate)}
         })
 
-        res.status(200).json({success: true, data: task})
+        res.status(200).json({success: true, data: updatedTask})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task due date'})
     }

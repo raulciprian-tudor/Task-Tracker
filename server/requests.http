@@ -1,14 +1,15 @@
-### Get all tasks
+### Get all tasks (authenticated)
 GET http://localhost:3000/api/tasks
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlOWI1NWY3ZS1kNzIyLTRiZTgtYmFhNi1hOGRkODFmNTI3NGMiLCJpYXQiOjE3Nzc1NzkyOTQsImV4cCI6MTc3ODE4NDA5NH0.WlVyPXnTKhSxiBgqQu3AZHwYvJwL1yQlERZiPNRsJOY
 
-### Add new tasks
+### Create task (authenticated)
 POST http://localhost:3000/api/tasks
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlOWI1NWY3ZS1kNzIyLTRiZTgtYmFhNi1hOGRkODFmNTI3NGMiLCJpYXQiOjE3Nzc1NzkyOTQsImV4cCI6MTc3ODE4NDA5NH0.WlVyPXnTKhSxiBgqQu3AZHwYvJwL1yQlERZiPNRsJOY
 Content-Type: application/json
 
 {
-  "description": "My fifth Task",
-  "priority": "high",
-  "dueDate": "2026-05-10T00:00:00.000Z"
+  "description": "My first authenticated task",
+  "priority": "high"
 }
 
 ### Delete task
@@ -28,4 +29,22 @@ Content-Type: application/json
 
 {
   "status": "done"
+}
+
+### Register
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "password123"
+}
+
+### Login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "password123"
 }

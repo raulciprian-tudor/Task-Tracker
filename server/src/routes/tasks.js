@@ -1,4 +1,5 @@
 import {Router} from 'express'
+import auth from '../middleware/auth.js'
 import {
     getAllTasks,
     createTask,
@@ -11,12 +12,12 @@ import {
 
 const router = Router()
 
-router.get('/', getAllTasks)
-router.post('/', createTask)
-router.put('/:id', updateTask)
-router.delete('/:id', deleteTask)
-router.patch('/:id/status', updateTaskStatus)
-router.patch('/:id/priority', updateTaskPriority)
-router.patch('/:id/due-date', updateTaskDueDate)
+router.get('/', auth, getAllTasks)
+router.post('/', auth, createTask)
+router.put('/:id', auth, updateTask)
+router.delete('/:id', auth, deleteTask)
+router.patch('/:id/status', auth, updateTaskStatus)
+router.patch('/:id/priority', auth, updateTaskPriority)
+router.patch('/:id/due-date', auth, updateTaskDueDate)
 
 export default router
