@@ -2,28 +2,20 @@ import {useState} from "react"
 import {motion, AnimatePresence} from "motion/react"
 
 const STATUS_CONFIG = {
-    todo: {
-        label: "To do",
-        dot: "bg-stone-300",
-        badge: "bg-stone-100 text-stone-500",
-    },
-    "in-progress": {
-        label: "In progress",
-        dot: "bg-amber-400",
-        badge: "bg-amber-50 text-amber-700",
-    },
-    done: {
-        label: "Done",
-        dot: "bg-emerald-400",
-        badge: "bg-emerald-50 text-emerald-700",
-    },
+    todo: { label: "To do", dot: "bg-stone-300", badge: "bg-stone-100 text-stone-500" },
+    "in-progress": { label: "In progress", dot: "bg-amber-400", badge: "bg-amber-50 text-amber-700" },
+    done: { label: "Done", dot: "bg-emerald-400", badge: "bg-emerald-50 text-emerald-700" },
+}
+
+const PRIORITY_CONFIG = {
+    low: { label: "Low", badge: "bg-sky-50 text-sky-600" },
+    medium: { label: "Medium", badge: "bg-yellow-50 text-yellow-600" },
+    high: { label: "High", badge: "bg-red-50 text-red-600" },
 }
 
 function formatDate(iso) {
     return new Date(iso).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
+        day: "numeric", month: "short", year: "numeric",
     })
 }
 
@@ -32,12 +24,11 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
     const [isEditing, setIsEditing] = useState(false)
     const [editDescription, setEditDescription] = useState(task.description)
     const config = STATUS_CONFIG[task.status]
+    const priorityConfig = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium
 
     const handleDelete = async () => {
         try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, {
-                method: 'DELETE'
-            })
+            await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}`, { method: 'DELETE' })
             onTaskDeleted(task.id)
             setMenuOpen(false)
         } catch (error) {
@@ -57,6 +48,21 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
             setMenuOpen(false)
         } catch (error) {
             console.error('Failed to update task status', error)
+        }
+    }
+
+    const handlePriorityUpdate = async (newPriority) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks/${task.id}/priority`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({priority: newPriority})
+            })
+            const data = await response.json()
+            onTaskUpdated(data.data)
+            setMenuOpen(false)
+        } catch (error) {
+            console.error('Failed to update task priority', error)
         }
     }
 
@@ -116,10 +122,13 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 {task.description}
                             </p>
                         )}
-                        <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
                             <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${config.badge}`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`}/>
                                 {config.label}
+                            </span>
+                            <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${priorityConfig.badge}`}>
+                                {priorityConfig.label}
                             </span>
                             <span className="text-xs text-stone-400">
                                 Updated {formatDate(task.updatedAt)}
@@ -147,7 +156,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 animate={{opacity: 1, scale: 1, y: 0}}
                                 exit={{opacity: 0, scale: 0.95, y: -4}}
                                 transition={{duration: 0.15, ease: "easeOut"}}
-                                className="absolute right-0 top-8 z-20 bg-white border border-stone-100 rounded-xl shadow-lg shadow-stone-100 py-1 w-40 overflow-hidden"
+                                className="absolute right-0 top-8 z-20 bg-white border border-stone-100 rounded-xl shadow-lg shadow-stone-100 py-1 w-44 overflow-hidden"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <button
@@ -156,6 +165,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                 >
                                     Edit
                                 </button>
+                                <div className="h-px bg-stone-100 my-1"/>
                                 {[
                                     {label: "Mark to do", status: "todo"},
                                     {label: "Mark in progress", status: "in-progress"},
@@ -164,6 +174,20 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                                     <button
                                         key={action.status}
                                         onClick={() => handleStatusUpdate(action.status)}
+                                        className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer"
+                                    >
+                                        {action.label}
+                                    </button>
+                                ))}
+                                <div className="h-px bg-stone-100 my-1"/>
+                                {[
+                                    {label: "Low priority", priority: "low"},
+                                    {label: "Medium priority", priority: "medium"},
+                                    {label: "High priority", priority: "high"}
+                                ].map((action) => (
+                                    <button
+                                        key={action.priority}
+                                        onClick={() => handlePriorityUpdate(action.priority)}
                                         className="w-full text-left text-sm text-stone-600 hover:bg-stone-50 hover:text-stone-900 px-3 py-2 transition-colors duration-100 cursor-pointer"
                                     >
                                         {action.label}

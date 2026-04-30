@@ -6,7 +6,8 @@ POST http://localhost:3000/api/tasks
 Content-Type: application/json
 
 {
-  "description": "My fifth Task"
+  "description": "My fifth Task",
+  "priority": "high"
 }
 
 ### Delete task

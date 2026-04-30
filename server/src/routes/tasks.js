@@ -4,7 +4,8 @@ import {
     createTask,
     updateTask,
     deleteTask,
-    updateTaskStatus
+    updateTaskStatus,
+    updateTaskPriority
 } from '../controllers/taskController.js'
 
 const router = Router()
@@ -14,5 +15,6 @@ router.post('/', createTask)
 router.put('/:id', updateTask)
 router.delete('/:id', deleteTask)
 router.patch('/:id/status', updateTaskStatus)
+router.patch('/:id/priority', updateTaskPriority)
 
 export default router

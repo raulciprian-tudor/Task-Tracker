@@ -21,7 +21,7 @@ export const getAllTasks = async (req, res) => {
 // POST /api/tasks
 export const createTask = async (req, res) => {
     try {
-        const {description} = req.body
+        const {description, priority} = req.body
 
         if (!description || description.trim() === '') {
             return res.status(404).json({success: false, message: "Description is required"})
@@ -29,7 +29,8 @@ export const createTask = async (req, res) => {
 
         const newTask = await prisma.task.create({
             data: {
-                description: description.trim()
+                description: description.trim(),
+                priority: priority || 'medium'
             }
         })
 
@@ -44,15 +45,18 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
     try {
         const {id} = req.params
-        const {description} = req.body
+        const {description, priority} = req.body
 
         if (!description || description.trim() === '') {
-            return res.status(404).json({success: false, message: "Description is required"})
+            return res.status(400).json({success: false, message: "Description is required"})
         }
 
         const task = await prisma.task.update({
             where: {id},
-            data: {description: description.trim()}
+            data: {
+                description: description.trim(),
+                ...(priority && {priority})
+            }
         })
 
         res.status(200).json({success: true, data: task})
@@ -95,5 +99,26 @@ export const updateTaskStatus = async (req, res) => {
         res.status(200).json({success: true, data: task})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to update task status'})
+    }
+}
+
+export const updateTaskPriority = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { priority } = req.body
+        const validPriorities = ['low', 'medium', 'high']
+
+        if (!validPriorities.includes(priority)) {
+            return res.status(400).json({success: false, message: "Invalid priority value"})
+        }
+
+        const task = await prisma.task.update({
+            where: { id },
+            data: { priority: priority }
+        })
+
+        res.status(200).json({ success: true, data: task })
+    } catch (error) {
+        res.status(500).json({success: false, message: 'Failed to update task priority'})
     }
 }
