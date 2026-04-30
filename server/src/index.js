@@ -12,8 +12,12 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(cors({
-    origin: 'http://localhost:5173'
+    origin: [
+        'http://localhost:5173',
+        'https://task-tracker-eight-jade.vercel.app'
+    ]
 }))
+
 app.use(express.json())
 
 app.use('/api/tasks', taskRoutes)
