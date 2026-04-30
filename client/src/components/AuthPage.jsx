@@ -22,6 +22,14 @@ export default function AuthPage({ onAuthSuccess }) {
                 setError(data.message)
                 return
             }
+
+            if (mode === 'register') {
+                setMode('login')
+                setPassword('')
+                setError(null)
+                return
+            }
+
             onAuthSuccess(data.token, data.data)
         } catch (err) {
             setError('Something went wrong. Please try again.')
