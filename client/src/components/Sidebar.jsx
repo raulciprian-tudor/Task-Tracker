@@ -7,7 +7,7 @@ const FILTERS = [
     {label: "Done", value: "done"},
 ]
 
-export default function Sidebar({tasks, filter, setFilter, onAdd}) {
+export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort}) {
     const count = (val) => val === "all" ? tasks.length : tasks.filter(t => t.status === val).length
     const done = tasks.filter(t => t.status === "done").length
     const progress = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0
@@ -29,10 +29,9 @@ export default function Sidebar({tasks, filter, setFilter, onAdd}) {
                                 }`}
                             >
                                 <span>{f.label}</span>
-                                <span
-                                    className={`text-xs font-medium tabular-nums ${filter === f.value ? "text-stone-300" : "text-stone-400"}`}>
-                  {count(f.value)}
-                </span>
+                                <span className={`text-xs font-medium tabular-nums ${filter === f.value ? "text-stone-300" : "text-stone-400"}`}>
+                                    {count(f.value)}
+                                </span>
                             </button>
                         ))}
                     </div>
@@ -52,6 +51,16 @@ export default function Sidebar({tasks, filter, setFilter, onAdd}) {
                         </div>
                     </div>
                 </div>
+
+                <button
+                    onClick={() => setSort(prev => prev === 'desc' ? 'asc' : 'desc')}
+                    className="flex items-center justify-center gap-2 w-full text-sm text-stone-500 bg-white border border-stone-100 px-4 py-2.5 rounded-xl hover:bg-stone-50 transition-all duration-150 cursor-pointer"
+                >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M1 3h12M3 7h8M5 11h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    {sort === 'desc' ? 'Newest first' : 'Oldest first'}
+                </button>
 
                 <button
                     onClick={onAdd}

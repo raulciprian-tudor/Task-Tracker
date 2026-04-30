@@ -16,6 +16,7 @@ export default function App() {
     const [tasks, setTasks] = useState([])
     const [filter, setFilter] = useState("all")
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [sort, setSort] = useState('desc')
 
     const filtered = filter === "all" ? tasks : tasks.filter(t => t.status === filter)
 
@@ -33,13 +34,13 @@ export default function App() {
 
     useEffect(() => {
         const fetchTasks = async () => {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`)
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?sort=${sort}`)
             const data = await response.json()
             setTasks(data.data)
         }
 
         fetchTasks()
-    }, [])
+    }, [sort])
 
     return (
         <div className="min-h-screen bg-[#FAFAF8]">
@@ -61,7 +62,6 @@ export default function App() {
                 {tasks.length}
               </span>
                         </div>
-
                         {/* Add button — mobile/tablet only, sidebar has it on desktop */}
                         <button onClick={() => setIsModalOpen(true)}
                                 className="lg:hidden flex items-center gap-1.5 text-sm font-medium bg-stone-900 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full hover:bg-stone-700 active:scale-95 transition-all duration-150 cursor-pointer">
@@ -98,8 +98,8 @@ export default function App() {
                         transition={{duration: 0.4, ease: "easeOut"}}
                         className="hidden lg:block"
                     >
-                        <Sidebar tasks={tasks} filter={filter} setFilter={setFilter}
-                                 onAdd={() => setIsModalOpen(true)}/>
+                        <Sidebar tasks={tasks} filter={filter} setFilter={setFilter} onAdd={() => setIsModalOpen(true)}
+                                 sort={sort} setSort={setSort}/>
                     </motion.div>
 
                     {/* Task list */}

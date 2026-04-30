@@ -3,7 +3,15 @@ import prisma from '../lib/prisma.js'
 // GET /api/tasks
 export const getAllTasks = async (req, res) => {
     try {
-        const tasks = await prisma.task.findMany()
+        const {sort} = req.query
+        const order = sort === 'asc' ? 'asc' : 'desc'
+
+        const tasks = await prisma.task.findMany({
+            orderBy: {
+                createdAt: order
+            }
+        })
+
         res.status(200).json({success: true, data: tasks})
     } catch (error) {
         res.status(500).json({success: false, message: 'Failed to fetch tasks'})
