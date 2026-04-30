@@ -21,7 +21,7 @@ export const getAllTasks = async (req, res) => {
 // POST /api/tasks
 export const createTask = async (req, res) => {
     try {
-        const {description, priority} = req.body
+        const {description, priority, dueDate} = req.body
 
         if (!description || description.trim() === '') {
             return res.status(404).json({success: false, message: "Description is required"})
@@ -30,7 +30,8 @@ export const createTask = async (req, res) => {
         const newTask = await prisma.task.create({
             data: {
                 description: description.trim(),
-                priority: priority || 'medium'
+                priority: priority || 'medium',
+                dueDate: dueDate ? new Date(dueDate) : null
             }
         })
 
@@ -45,7 +46,7 @@ export const createTask = async (req, res) => {
 export const updateTask = async (req, res) => {
     try {
         const {id} = req.params
-        const {description, priority} = req.body
+        const {description, priority, dueDate} = req.body
 
         if (!description || description.trim() === '') {
             return res.status(400).json({success: false, message: "Description is required"})
@@ -55,7 +56,8 @@ export const updateTask = async (req, res) => {
             where: {id},
             data: {
                 description: description.trim(),
-                ...(priority && {priority})
+                ...(priority && {priority}),
+                ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null})
             }
         })
 

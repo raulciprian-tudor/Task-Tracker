@@ -4,12 +4,17 @@ import { motion } from "motion/react"
 export default function AddTaskModal({ onClose, onTaskCreated }) {
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('medium')
+    const [dueDate, setDueDate] = useState('')
 
     const handleCreate = async () => {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description, priority })
+            body: JSON.stringify({
+                description,
+                priority,
+                dueDate: dueDate ? new Date(dueDate).toISOString() : null
+            })
         })
         const data = await response.json()
         onTaskCreated(data.data)
@@ -54,17 +59,28 @@ export default function AddTaskModal({ onClose, onTaskCreated }) {
                                 className="w-full text-sm text-stone-800 placeholder:text-stone-300 bg-stone-50 border border-stone-100 rounded-xl px-4 py-3 resize-none focus:outline-none focus:border-stone-300 focus:bg-white transition-all duration-150"
                             />
                         </div>
-                        <div>
-                            <label className="block text-xs font-medium text-stone-500 mb-1.5">Priority</label>
-                            <select
-                                value={priority}
-                                onChange={(e) => setPriority(e.target.value)}
-                                className="w-full text-sm text-stone-700 bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 focus:outline-none focus:border-stone-300 transition-all cursor-pointer"
-                            >
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
+                        <div className="flex gap-3">
+                            <div className="flex-1">
+                                <label className="block text-xs font-medium text-stone-500 mb-1.5">Priority</label>
+                                <select
+                                    value={priority}
+                                    onChange={(e) => setPriority(e.target.value)}
+                                    className="w-full text-sm text-stone-700 bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 focus:outline-none focus:border-stone-300 transition-all cursor-pointer"
+                                >
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-xs font-medium text-stone-500 mb-1.5">Due date</label>
+                                <input
+                                    type="date"
+                                    value={dueDate}
+                                    onChange={(e) => setDueDate(e.target.value)}
+                                    className="w-full text-sm text-stone-700 bg-stone-50 border border-stone-100 rounded-xl px-4 py-2.5 focus:outline-none focus:border-stone-300 transition-all cursor-pointer"
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="px-6 pb-5 flex gap-2 justify-end">

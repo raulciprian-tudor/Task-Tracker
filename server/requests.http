@@ -7,7 +7,8 @@ Content-Type: application/json
 
 {
   "description": "My fifth Task",
-  "priority": "high"
+  "priority": "high",
+  "dueDate": "2026-05-10T00:00:00.000Z"
 }
 
 ### Delete task

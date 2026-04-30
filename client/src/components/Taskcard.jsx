@@ -130,6 +130,15 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                             <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${priorityConfig.badge}`}>
                                 {priorityConfig.label}
                             </span>
+                            {task.dueDate && (
+                                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-stone-50 text-stone-500">
+                                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                        <rect x="1" y="2" width="8" height="7" rx="1" stroke="currentColor" strokeWidth="1.2"/>
+                                        <path d="M3 1v2M7 1v2M1 5h8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                                    </svg>
+                                    {new Date(task.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                                </span>
+                            )}
                             <span className="text-xs text-stone-400">
                                 Updated {formatDate(task.updatedAt)}
                             </span>
