@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 
-export default function AddTaskModal({ onClose, onTaskCreated, onError, token }) {
+export default function AddTaskModal({ onClose, onTaskCreated, onError, token, projectId }) {
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('medium')
     const [dueDate, setDueDate] = useState('')
@@ -17,7 +17,8 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token })
                 body: JSON.stringify({
                     description,
                     priority,
-                    dueDate: dueDate ? new Date(dueDate).toISOString() : null
+                    dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+                    projectId: projectId || null
                 })
             })
             const data = await response.json()

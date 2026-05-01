@@ -51,3 +51,29 @@ Content-Type: application/json
 
 ### Production - Get all tasks
 GET https://task-tracker-production-2a51.up.railway.app/api/tasks
+
+### Get all projects
+GET http://localhost:3000/api/projects
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlOWI1NWY3ZS1kNzIyLTRiZTgtYmFhNi1hOGRkODFmNTI3NGMiLCJpYXQiOjE3Nzc2NjQ2MzMsImV4cCI6MTc3ODI2OTQzM30.5qzlzj5iDOtH2HKjai7NYKo85hRPjmJzd6WQO_q2VP4
+
+### Create project
+POST http://localhost:3000/api/projects
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlOWI1NWY3ZS1kNzIyLTRiZTgtYmFhNi1hOGRkODFmNTI3NGMiLCJpYXQiOjE3Nzc2NjQ2MzMsImV4cCI6MTc3ODI2OTQzM30.5qzlzj5iDOtH2HKjai7NYKo85hRPjmJzd6WQO_q2VP4
+Content-Type: application/json
+
+{
+  "name": "Task Tracker"
+}
+
+### Update project
+PUT http://localhost:3000/api/projects/364c9ecd-aa86-4659-be14-b83e59dd4676
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlOWI1NWY3ZS1kNzIyLTRiZTgtYmFhNi1hOGRkODFmNTI3NGMiLCJpYXQiOjE3Nzc2NjQ2MzMsImV4cCI6MTc3ODI2OTQzM30.5qzlzj5iDOtH2HKjai7NYKo85hRPjmJzd6WQO_q2VP4
+Content-Type: application/json
+
+{
+  "name": "Task Tracker v2"
+}
+
+### Delete project
+DELETE http://localhost:3000/api/projects/364c9ecd-aa86-4659-be14-b83e59dd4676
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlOWI1NWY3ZS1kNzIyLTRiZTgtYmFhNi1hOGRkODFmNTI3NGMiLCJpYXQiOjE3Nzc2NjQ2MzMsImV4cCI6MTc3ODI2OTQzM30.5qzlzj5iDOtH2HKjai7NYKo85hRPjmJzd6WQO_q2VP4

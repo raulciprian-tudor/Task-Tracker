@@ -1,4 +1,5 @@
 import authRoutes from './routes/auth.js'
+import projectRoutes from './routes/projects.js'
 
 import dotenv from 'dotenv'
 
@@ -22,6 +23,7 @@ app.use(express.json())
 
 app.use('/api/tasks', taskRoutes)
 app.use('/api/auth', authRoutes)
+app.use('/api/projects', projectRoutes)
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)

@@ -22,7 +22,7 @@ export const getAllTasks = async (req, res) => {
 // POST /api/tasks
 export const createTask = async (req, res) => {
     try {
-        const {description, priority, dueDate} = req.body
+        const {description, priority, dueDate, projectId } = req.body
 
         if (!description || description.trim() === '') {
             return res.status(400).json({success: false, message: "Description is required"})
@@ -33,7 +33,8 @@ export const createTask = async (req, res) => {
                 description: description.trim(),
                 priority: priority || 'medium',
                 dueDate: dueDate ? new Date(dueDate) : null,
-                userId: req.user.userId
+                userId: req.user.userId,
+                projectId: projectId || null
             }
         })
 

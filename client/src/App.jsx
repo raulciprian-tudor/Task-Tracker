@@ -3,6 +3,7 @@ import {motion, AnimatePresence} from "motion/react"
 import TaskCard from './components/TaskCard.jsx'
 import Sidebar from './components/Sidebar.jsx'
 import AddTaskModal from './components/AddTaskModal.jsx'
+import AddProjectModal from './components/AddProjectModal.jsx'
 import EmptyState from './components/EmptyState.jsx'
 import AuthPage from './components/AuthPage.jsx'
 import { THEMES } from './themes.js'
@@ -54,8 +55,11 @@ function Toast({ message, type, onClose }) {
 
 export default function App() {
     const [tasks, setTasks] = useState([])
+    const [projects, setProjects] = useState([])
+    const [selectedProject, setSelectedProject] = useState(null)
     const [filter, setFilter] = useState("all")
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
     const [sort, setSort] = useState('desc')
     const [toast, setToast] = useState(null)
     const [themeKey, setThemeKey] = useState(() => localStorage.getItem('theme') || 'light')
@@ -84,6 +88,8 @@ export default function App() {
         setToken(null)
         setUser(null)
         setTasks([])
+        setProjects([])
+        setSelectedProject(null)
         localStorage.removeItem('token')
         localStorage.removeItem('user')
     }
@@ -91,9 +97,14 @@ export default function App() {
     const showError = (message) => setToast({ message, type: 'error' })
     const showSuccess = (message) => setToast({ message, type: 'success' })
 
+    // Filter tasks based on selected project and status filter
+    const visibleTasks = selectedProject
+        ? tasks.filter(t => t.projectId === selectedProject.id)
+        : tasks
+
     const filtered = filter === "all"
-        ? tasks.filter(t => t.status !== "done")
-        : tasks.filter(t => t.status === filter)
+        ? visibleTasks.filter(t => t.status !== "done")
+        : visibleTasks.filter(t => t.status === filter)
 
     const handleTaskCreated = (newTask) => {
         setTasks(prev => [...prev, newTask])
@@ -115,21 +126,43 @@ export default function App() {
         showSuccess('Task updated')
     }
 
+    const handleProjectCreated = (newProject) => {
+        setProjects(prev => [...prev, newProject])
+        showSuccess('Project created')
+    }
+
+    const handleProjectDeleted = (id) => {
+        setProjects(prev => prev.filter(p => p.id !== id))
+        setTasks(prev => prev.filter(t => t.projectId !== id))
+        if (selectedProject?.id === id) setSelectedProject(null)
+        showSuccess('Project deleted')
+    }
+
     useEffect(() => {
         if (!token) return
         const fetchTasks = async () => {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?sort=${sort}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            if (response.status === 401) {
-                handleLogout()
-                return
-            }
+            if (response.status === 401) { handleLogout(); return }
             const data = await response.json()
             setTasks(data.data)
         }
         fetchTasks()
     }, [sort, token])
+
+    useEffect(() => {
+        if (!token) return
+        const fetchProjects = async () => {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (response.status === 401) { handleLogout(); return }
+            const data = await response.json()
+            setProjects(data.data)
+        }
+        fetchProjects()
+    }, [token])
 
     const cssVars = {
         '--bg': theme.bg,
@@ -166,18 +199,27 @@ export default function App() {
                 <div className="max-w-6xl mx-auto px-4 sm:px-6">
                     <div className="flex items-center justify-between h-14 sm:h-16">
                         <div className="flex items-center gap-3">
-                            <span className="text-xl sm:text-[22px] tracking-tight font-medium"
-                                  style={{color: 'var(--text)', fontFamily: "'DM Serif Display', Georgia, serif"}}>
+                            <button
+                                onClick={() => setSelectedProject(null)}
+                                className="text-xl sm:text-[22px] tracking-tight font-medium transition-opacity hover:opacity-70 cursor-pointer"
+                                style={{color: 'var(--text)', fontFamily: "'DM Serif Display', Georgia, serif"}}>
                                 Tasks
-                            </span>
+                            </button>
+                            {selectedProject && (
+                                <>
+                                    <span style={{ color: 'var(--text-subtle)' }}>/</span>
+                                    <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                                        {selectedProject.name}
+                                    </span>
+                                </>
+                            )}
                             <span className="text-xs font-medium rounded-full px-2 py-0.5 tabular-nums"
                                   style={{ backgroundColor: 'var(--border)', color: 'var(--text-muted)' }}>
-                                {tasks.filter(t => t.status !== 'done').length}
+                                {visibleTasks.filter(t => t.status !== 'done').length}
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="hidden sm:block text-xs"
-                                  style={{ color: 'var(--text-subtle)' }}>
+                            <span className="hidden sm:block text-xs" style={{ color: 'var(--text-subtle)' }}>
                                 {user?.email}
                             </span>
                             <button onClick={handleLogout}
@@ -257,13 +299,21 @@ export default function App() {
                             onThemeChange={handleThemeChange}
                             user={user}
                             onLogout={handleLogout}
+                            projects={projects}
+                            selectedProject={selectedProject}
+                            onSelectProject={setSelectedProject}
+                            onAddProject={() => setIsProjectModalOpen(true)}
+                            onDeleteProject={handleProjectDeleted}
+                            token={token}
                         />
                     </motion.div>
 
                     <div className="flex-1 min-w-0">
                         <div className="hidden lg:flex items-center justify-between mb-5">
                             <h2 className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                                {filter === "all" ? "All tasks" : FILTERS.find(f => f.value === filter)?.label}
+                                {selectedProject
+                                    ? selectedProject.name
+                                    : filter === "all" ? "All tasks" : FILTERS.find(f => f.value === filter)?.label}
                                 <span className="ml-2 tabular-nums" style={{ color: 'var(--text-subtle)' }}>{filtered.length}</span>
                             </h2>
                         </div>
@@ -300,6 +350,16 @@ export default function App() {
                 {isModalOpen && <AddTaskModal
                     onClose={() => setIsModalOpen(false)}
                     onTaskCreated={handleTaskCreated}
+                    onError={showError}
+                    token={token}
+                    projectId={selectedProject?.id || null}
+                />}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {isProjectModalOpen && <AddProjectModal
+                    onClose={() => setIsProjectModalOpen(false)}
+                    onProjectCreated={handleProjectCreated}
                     onError={showError}
                     token={token}
                 />}
