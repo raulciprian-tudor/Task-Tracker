@@ -6,16 +6,16 @@ import AddTaskModal from './components/AddTaskModal.jsx'
 import AddProjectModal from './components/AddProjectModal.jsx'
 import EmptyState from './components/EmptyState.jsx'
 import AuthPage from './components/AuthPage.jsx'
-import { THEMES } from './themes.js'
+import {THEMES} from './themes.js'
 
 const FILTERS = [
-    {label: "All", value: "all"},
-    {label: "To do", value: "todo"},
-    {label: "In progress", value: "in-progress"},
-    {label: "Done", value: "done"},
+    { label: "All", value: "all" },
+    { label: "To do", value: "todo" },
+    { label: "In progress", value: "in-progress" },
+    { label: "Done", value: "done" },
 ]
 
-function Toast({ message, type, onClose }) {
+function Toast ({ message, type, onClose }) {
     useEffect(() => {
         const timer = setTimeout(onClose, 4000)
         return () => clearTimeout(timer)
@@ -40,7 +40,8 @@ function Toast({ message, type, onClose }) {
             ) : (
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <circle cx="8" cy="8" r="7" stroke="#4ade80" strokeWidth="1.5"/>
-                    <path d="M5 8l2.5 2.5L11 5.5" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M5 8l2.5 2.5L11 5.5" stroke="#4ade80" strokeWidth="1.5" strokeLinecap="round"
+                          strokeLinejoin="round"/>
                 </svg>
             )}
             <span>{message}</span>
@@ -53,11 +54,12 @@ function Toast({ message, type, onClose }) {
     )
 }
 
-export default function App() {
+export default function App () {
     const [tasks, setTasks] = useState([])
     const [projects, setProjects] = useState([])
     const [selectedProject, setSelectedProject] = useState(null)
     const [filter, setFilter] = useState("all")
+    const [search, setSearch] = useState('')
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isProjectModalOpen, setIsProjectModalOpen] = useState(false)
     const [sort, setSort] = useState('desc')
@@ -103,8 +105,8 @@ export default function App() {
         : tasks
 
     const filtered = filter === "all"
-        ? visibleTasks.filter(t => t.status !== "done")
-        : visibleTasks.filter(t => t.status === filter)
+        ? visibleTasks.filter(t => t.status !== "done" && t.description.toLowerCase().includes(search.toLowerCase()))
+        : visibleTasks.filter(t => t.status === filter && t.description.toLowerCase().includes(search.toLowerCase()))
 
     const handleTaskCreated = (newTask) => {
         setTasks(prev => [...prev, newTask])
@@ -144,7 +146,10 @@ export default function App() {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks?sort=${sort}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            if (response.status === 401) { handleLogout(); return }
+            if (response.status === 401) {
+                handleLogout();
+                return
+            }
             const data = await response.json()
             setTasks(data.data)
         }
@@ -157,7 +162,10 @@ export default function App() {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            if (response.status === 401) { handleLogout(); return }
+            if (response.status === 401) {
+                handleLogout();
+                return
+            }
             const data = await response.json()
             setProjects(data.data)
         }
@@ -178,21 +186,23 @@ export default function App() {
 
     if (!isAuthenticated) {
         return (
-            <div style={{ ...cssVars, backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="min-h-screen transition-colors duration-300">
-                <AuthPage onAuthSuccess={handleAuthSuccess} />
+            <div style={{ ...cssVars, backgroundColor: 'var(--bg)', color: 'var(--text)' }}
+                 className="min-h-screen transition-colors duration-300">
+                <AuthPage onAuthSuccess={handleAuthSuccess}/>
                 <AnimatePresence>
-                    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                    {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)}/>}
                 </AnimatePresence>
             </div>
         )
     }
 
     return (
-        <div style={{ ...cssVars, backgroundColor: 'var(--bg)', color: 'var(--text)' }} className="min-h-screen transition-colors duration-300">
+        <div style={{ ...cssVars, backgroundColor: 'var(--bg)', color: 'var(--text)' }}
+             className="min-h-screen transition-colors duration-300">
 
             <motion.header
-                initial={{opacity: 0, y: -12}} animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.4, ease: "easeOut"}}
+                initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
                 style={{ backgroundColor: 'var(--header)', borderColor: 'var(--border)' }}
                 className="border-b sticky top-0 z-10 transition-colors duration-300"
             >
@@ -202,26 +212,26 @@ export default function App() {
                             <button
                                 onClick={() => setSelectedProject(null)}
                                 className="text-xl sm:text-[22px] tracking-tight font-medium transition-opacity hover:opacity-70 cursor-pointer"
-                                style={{color: 'var(--text)', fontFamily: "'DM Serif Display', Georgia, serif"}}>
+                                style={{ color: 'var(--text)', fontFamily: "'DM Serif Display', Georgia, serif" }}>
                                 Tasks
                             </button>
                             {selectedProject && (
                                 <>
                                     <span style={{ color: 'var(--text-subtle)' }}>/</span>
                                     <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                                        {selectedProject.name}
-                                    </span>
+                                {selectedProject.name}
+                            </span>
                                 </>
                             )}
                             <span className="text-xs font-medium rounded-full px-2 py-0.5 tabular-nums"
                                   style={{ backgroundColor: 'var(--border)', color: 'var(--text-muted)' }}>
-                                {visibleTasks.filter(t => t.status !== 'done').length}
-                            </span>
+                        {visibleTasks.filter(t => t.status !== 'done').length}
+                    </span>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="hidden sm:block text-xs" style={{ color: 'var(--text-subtle)' }}>
-                                {user?.email}
-                            </span>
+                    <span className="hidden sm:block text-xs" style={{ color: 'var(--text-subtle)' }}>
+                        {user?.email}
+                    </span>
                             <button onClick={handleLogout}
                                     className="hidden sm:flex text-xs px-3 py-1.5 rounded-lg cursor-pointer transition-all"
                                     style={{ color: 'var(--text-muted)', backgroundColor: 'var(--border)' }}>
@@ -248,7 +258,7 @@ export default function App() {
                                     <motion.div layoutId="active-filter"
                                                 style={{ backgroundColor: 'var(--accent)' }}
                                                 className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
-                                                transition={{type: "spring", stiffness: 400, damping: 30}}/>
+                                                transition={{ type: "spring", stiffness: 400, damping: 30 }}/>
                                 )}
                             </button>
                         ))}
@@ -278,14 +288,66 @@ export default function App() {
                             ))}
                         </div>
                     </div>
+
+                    <div className="lg:hidden flex items-center gap-2 py-2 border-t overflow-x-auto"
+                         style={{ borderColor: 'var(--border)' }}>
+                        <button
+                            onClick={() => setSelectedProject(null)}
+                            className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                            style={!selectedProject
+                                ? { backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }
+                                : { backgroundColor: 'var(--border)', color: 'var(--text-muted)' }
+                            }
+                        >
+                            All
+                        </button>
+                        {projects.map(p => (
+                            <button key={p.id} onClick={() => setSelectedProject(p)}
+                                    className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                                    style={selectedProject?.id === p.id
+                                        ? { backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }
+                                        : { backgroundColor: 'var(--border)', color: 'var(--text-muted)' }
+                                    }>
+                                {p.name}
+                            </button>
+                        ))}
+                        <button onClick={() => setIsProjectModalOpen(true)}
+                                className="flex-shrink-0 text-xs px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1"
+                                style={{ backgroundColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                <path d="M5 1v8M1 5h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            New
+                        </button>
+                    </div>
+
+                    {/* Mobile search */}
+                    <div className="lg:hidden py-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                        <div className="relative">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                                 className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                                 style={{ color: 'var(--text-subtle)' }}>
+                                <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/>
+                                <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search tasks..."
+                                className="w-full text-base pl-8 pr-4 py-1.5 rounded-lg border focus:outline-none transition-all"
+                                style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                            />
+                        </div>
+                    </div>
                 </div>
             </motion.header>
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 lg:py-10">
                 <div className="flex gap-8 xl:gap-12 items-start">
                     <motion.div
-                        initial={{opacity: 0, x: -16}} animate={{opacity: 1, x: 0}}
-                        transition={{duration: 0.4, ease: "easeOut"}}
+                        initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                         className="hidden lg:block"
                     >
                         <Sidebar
@@ -305,6 +367,8 @@ export default function App() {
                             onAddProject={() => setIsProjectModalOpen(true)}
                             onDeleteProject={handleProjectDeleted}
                             token={token}
+                            search={search}
+                            setSearch={setSearch}
                         />
                     </motion.div>
 
@@ -322,13 +386,13 @@ export default function App() {
                             {filtered.length === 0 ? (
                                 <EmptyState key="empty" filter={filter}/>
                             ) : (
-                                <motion.div key="board" initial={{opacity: 0}} animate={{opacity: 1}}
-                                            exit={{opacity: 0}} className="flex flex-col gap-2">
+                                <motion.div key="board" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }} className="flex flex-col gap-2">
                                     {filtered.map((task, i) => (
                                         <motion.div key={task.id}
-                                                    initial={{opacity: 0, y: 16}} animate={{opacity: 1, y: 0}}
-                                                    exit={{opacity: 0, y: -8}}
-                                                    transition={{duration: 0.3, delay: i * 0.05}}>
+                                                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -8 }}
+                                                    transition={{ duration: 0.3, delay: i * 0.05 }}>
                                             <TaskCard
                                                 task={task}
                                                 onTaskDeleted={handleTaskDeleted}
@@ -366,7 +430,7 @@ export default function App() {
             </AnimatePresence>
 
             <AnimatePresence>
-                {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+                {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)}/>}
             </AnimatePresence>
         </div>
     )

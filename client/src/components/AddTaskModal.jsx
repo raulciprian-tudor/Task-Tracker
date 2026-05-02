@@ -1,12 +1,18 @@
-import { useState } from "react"
-import { motion } from "motion/react"
+import {useRef, useState} from "react"
+import {motion} from "motion/react"
 
-export default function AddTaskModal({ onClose, onTaskCreated, onError, token, projectId }) {
+export default function AddTaskModal ({ onClose, onTaskCreated, onError, token, projectId }) {
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState('medium')
     const [dueDate, setDueDate] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    const isSubmitting = useRef(false)
 
     const handleCreate = async () => {
+        if (isSubmitting.current) return
+        isSubmitting.current = true
+        setLoading(true)
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/tasks`, {
                 method: 'POST',
@@ -27,6 +33,9 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token, p
             onClose()
         } catch (error) {
             onError('Failed to create task')
+        } finally {
+            isSubmitting.current = false
+            setLoading(false)
         }
     }
 
@@ -60,7 +69,8 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token, p
                                 onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
                                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5"
+                                      strokeLinecap="round"/>
                             </svg>
                         </button>
                     </div>
@@ -73,7 +83,7 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token, p
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="What needs to be done?"
                                 rows={3}
-                                className="w-full text-sm rounded-xl px-4 py-3 resize-none focus:outline-none transition-all duration-150 border"
+                                className="w-full text-base rounded-xl px-4 py-3 resize-none focus:outline-none transition-all duration-150 border"
                                 style={{
                                     backgroundColor: 'var(--bg)',
                                     borderColor: 'var(--border)',
@@ -88,7 +98,7 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token, p
                                 <select
                                     value={priority}
                                     onChange={(e) => setPriority(e.target.value)}
-                                    className="w-full text-sm rounded-xl px-4 py-2.5 focus:outline-none transition-all cursor-pointer border"
+                                    className="w-full text-base rounded-xl px-4 py-2.5 focus:outline-none transition-all cursor-pointer border"
                                     style={{
                                         backgroundColor: 'var(--bg)',
                                         borderColor: 'var(--border)',
@@ -107,7 +117,7 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token, p
                                     type="date"
                                     value={dueDate}
                                     onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full text-sm rounded-xl px-4 py-2.5 focus:outline-none transition-all cursor-pointer border"
+                                    className="w-full text-base rounded-xl px-4 py-2.5 focus:outline-none transition-all cursor-pointer border"
                                     style={{
                                         backgroundColor: 'var(--bg)',
                                         borderColor: 'var(--border)',
@@ -126,9 +136,10 @@ export default function AddTaskModal({ onClose, onTaskCreated, onError, token, p
                             Cancel
                         </button>
                         <button onClick={handleCreate}
-                                className="text-sm font-medium px-5 py-2 rounded-xl active:scale-95 transition-all cursor-pointer"
+                                disabled={loading}
+                                className="text-sm font-medium px-5 py-2 rounded-xl active:scale-95 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
-                            Add task
+                            {loading ? 'Adding...' : 'Add task'}
                         </button>
                     </div>
                 </div>

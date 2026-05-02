@@ -137,36 +137,40 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                     <button
-                        className="mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 transition-colors duration-150 cursor-pointer flex items-center justify-center"
-                        style={{ borderColor: 'var(--border)' }}
+                        onClick={() => handleStatusUpdate(task.status === 'done' ? 'todo' : 'done')}
+                        className="mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 transition-all duration-150 cursor-pointer flex items-center justify-center group/check"
+                        style={{ borderColor: task.status === 'done' ? 'var(--accent)' : 'var(--border)' }}
                     >
-                        {task.status === "done" && (
+                        {task.status === 'done' ? (
                             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                <path d="M1 4l3 3 5-6" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        ) : (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="opacity-0 group-hover/check:opacity-40 transition-opacity duration-150">
                                 <path d="M1 4l3 3 5-6" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                         )}
                     </button>
-
                     <div className="flex-1 min-w-0">
                         {isEditing ? (
-                            <div className="flex flex-col gap-2">
+                            <div className="relative">
                                 <input
                                     value={editDescription}
                                     onChange={(e) => setEditDescription(e.target.value)}
-                                    className="w-full text-sm rounded-lg px-3 py-1.5 focus:outline-none transition-all duration-150 border"
+                                    className="w-full text-sm rounded-lg px-3 py-1.5 pr-24 focus:outline-none transition-all duration-150 border"
                                     style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
                                     autoFocus
                                 />
-                                <div className="flex gap-2">
+                                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex gap-1">
                                     <button onClick={handleSave}
-                                            className="text-xs font-medium px-3 py-1 rounded-lg cursor-pointer transition-all"
+                                            className="text-xs font-medium px-2 py-0.5 rounded-md cursor-pointer transition-all"
                                             style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-text)' }}>
                                         Save
                                     </button>
                                     <button onClick={handleCancel}
-                                            className="text-xs px-3 py-1 rounded-lg cursor-pointer transition-all"
+                                            className="text-xs px-2 py-0.5 rounded-md cursor-pointer transition-all"
                                             style={{ color: 'var(--text-muted)', backgroundColor: 'var(--border)' }}>
-                                        Cancel
+                                        ✕
                                     </button>
                                 </div>
                             </div>
@@ -228,7 +232,7 @@ export default function TaskCard({task, onTaskDeleted, onStatusUpdated, onTaskUp
                 <div className="relative shrink-0">
                     <button
                         onClick={(e) => { e.stopPropagation(); setMenuOpen(o => !o) }}
-                        className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer"
+                        className="opacity-50 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-150 cursor-pointer"
                         style={{ color: 'var(--text-subtle)' }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--border)'}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}

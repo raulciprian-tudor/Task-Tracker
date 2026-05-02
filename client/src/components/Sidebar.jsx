@@ -8,7 +8,7 @@ const FILTERS = [
     {label: "Done", value: "done"},
 ]
 
-export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort, themeKey, onThemeChange, user, onLogout, projects, selectedProject, onSelectProject, onAddProject, onDeleteProject, token}) {
+export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort, themeKey, onThemeChange, user, onLogout, projects, selectedProject, onSelectProject, onAddProject, onDeleteProject, token, search, setSearch}) {
     const count = (val) => val === "all"
         ? tasks.filter(t => t.status !== 'done').length
         : tasks.filter(t => t.status === val).length
@@ -151,6 +151,23 @@ export default function Sidebar({tasks, filter, setFilter, onAdd, sort, setSort,
                     </svg>
                     {sort === 'desc' ? 'Newest first' : 'Oldest first'}
                 </button>
+
+                <div className="relative">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+                         className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                         style={{ color: 'var(--text-subtle)' }}>
+                        <circle cx="6" cy="6" r="4" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M10 10l2.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search tasks..."
+                        className="w-full text-sm pl-8 pr-4 py-2.5 rounded-xl border focus:outline-none transition-all"
+                        style={{ backgroundColor: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                    />
+                </div>
 
                 <button onClick={onAdd}
                         className="flex items-center justify-center gap-2 w-full text-sm font-medium px-4 py-2.5 rounded-xl active:scale-95 transition-all duration-150 cursor-pointer"
