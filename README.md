@@ -115,11 +115,14 @@ This starts both the frontend and backend concurrently:
 
 ## Features
 
-- **Authentication** — register and login with JWT-based auth, user-scoped tasks
+- **Authentication** — register and login with JWT-based auth, user-scoped data
+- **Projects** — create projects and organise tasks within them
 - **Task management** — add, edit, delete tasks with inline editing
+- **Click to complete** — click the circle on a task to mark it done instantly
 - **Status tracking** — mark tasks as To Do, In Progress, or Done
 - **Priority levels** — set Low, Medium, or High priority per task
 - **Due dates** — assign and update due dates with past-date validation
+- **Search** — filter tasks by name in real time
 - **Filtering** — filter tasks by status
 - **Sorting** — sort by newest or oldest first
 - **5 themes** — Light, Dark, Dusk, Forest, Ocean — persisted via localStorage
@@ -150,18 +153,38 @@ This starts both the frontend and backend concurrently:
 | PATCH  | `/api/tasks/:id/priority` | Update task priority |
 | PATCH  | `/api/tasks/:id/due-date` | Update task due date |
 
+### Projects (all protected — require `Authorization: Bearer <token>`)
+
+| Method | Endpoint              | Description          |
+|--------|-----------------------|----------------------|
+| GET    | `/api/projects`       | Get all projects     |
+| POST   | `/api/projects`       | Create a project     |
+| PUT    | `/api/projects/:id`   | Update a project     |
+| DELETE | `/api/projects/:id`   | Delete a project     |
+
 ---
 
 ## Database Schema
 
 ```prisma
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String    @id @default(uuid())
+  email     String    @unique
   password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  tasks     Task[]
+  projects  Project[]
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tasks     Task[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  tasks     Task[]
 }
 
 model Task {
@@ -174,6 +197,8 @@ model Task {
   updatedAt   DateTime  @updatedAt
   userId      String
   user        User      @relation(fields: [userId], references: [id])
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id])
 }
 ```
 
